@@ -1,0 +1,43 @@
+sensor 1 - Closet
+Main Lab - 6 & 5
+Sample Prep 8
+Specimen Intake 3
+Specimen Processing 7
+Master Mix 2
+
+
+^XA 
+
+^LH0,0 
+
+^LT60
+^LS0
+^MMC
+~TA000
+
+^FX Datamatrix Code ^FS
+^FO120,0,0^BXN,10,200,14,14 ^FN1^FS 
+^FX Number ^FS
+^FO20,150,0^AUN,20,0^FB450,1,0,C^FN1^FS 
+^FX The Number to Print ^FS
+^FN1^FD1234567890123456^FS
+^XZ 
+
+
+
+ ^XA 
+
+^LH0,0 
+
+^LT60
+^LS0
+
+~TA000
+
+^FX Datamatrix Code ^FS
+^FO120,0,0^BXN,6,200,14,14 ^FN1^FS 
+^FX Number ^FS
+^FO20,100,0^AUN,13,0^FB400,1,0,C^FN1^FS 
+^FX The Number to Print ^FS
+^FN1^FD1234567890123456^FS
+^XZ 
