@@ -44,6 +44,21 @@
             <TextBlock x:Name="txtUSBStatus" Margin="10" HorizontalAlignment="Stretch" Grid.Column="1" Grid.Row="2" VerticalAlignment="Stretch"/>
             <TextBlock x:Name="txbStatus" Margin="10" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="3"/>
             <TextBlock x:Name="txbQueue"  Margin="10" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="5"/>
+            
+            <!--<Button x:Name="btnSettings" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="1" Grid.Row="5" Content="Printer Options" Click="btnSettings_Click"/>
+            <Popup x:Name="popSettings" IsOpen="True" Height="300" Width="200" Visibility="Collapsed">
+                <Grid VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Background="Bisque">
+                    <Grid.RowDefinitions>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+                    <TextBlock x:Name="popLeft" Text="Left Offset"/>
+                    <TextBlock x:Name="popTop" Text="Top Offset" Grid.Row="1"/>
+                    <TextBlock x:Name="popDarkness" Text="Darkness" Grid.Row="2"/>
+                </Grid>
+
+            </Popup>-->
         </Grid>
 
         <TextBlock Text="Customer Number: " HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="0" Grid.Row="0"  />

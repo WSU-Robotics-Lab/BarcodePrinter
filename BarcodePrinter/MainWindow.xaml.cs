@@ -27,12 +27,14 @@ namespace BarcodePrinter
     /// </summary>
     public partial class MainWindow : Window
     {
-        private const  string _Version = "0.8";
+        private string _Version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString(2);
 
+        #region fields
         private List<Zebra.Sdk.Comm.ConnectionA> _PrinterConnections;
         private System.Threading.Thread _Monitor;
 
-        
+        //private PrinterSettings settings;
+        #endregion
 
         //private Timer _StatusTimer;
         public MainWindow()
@@ -379,6 +381,8 @@ namespace BarcodePrinter
                 System.Threading.Thread.Sleep(500); 
             }   
         }
+
+        
     }
 }
 public static class ExtensionMethods
