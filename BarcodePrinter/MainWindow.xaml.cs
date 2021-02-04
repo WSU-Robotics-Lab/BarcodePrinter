@@ -91,13 +91,13 @@ namespace BarcodePrinter
                     // Print rate 
                     MainLabel.Append("^PR6");
                     // Darkness
-                    MainLabel.Append("~SD10");
+                    MainLabel.Append("~SD16");
                     // Tear / Cut offset
                     MainLabel.Append("~TA-010");
                     // Thermal Transfer
                     MainLabel.Append("^MTD");
                     // print mode, T=tear, P=peel, C=cutter
-                    if (ckCut.IsChecked.HasValue && ckCut.IsChecked.Value.Equals(true))
+                    if (rdo610.IsChecked.HasValue && ckCut.IsChecked.Value.Equals(true))
                         MainLabel.Append("^MMC");
                     else
                         MainLabel.Append("^MMT");
@@ -160,7 +160,7 @@ namespace BarcodePrinter
                     // Print rate 
                     MainLabel.Append("^PR6");
                     // Darkness
-                    MainLabel.Append("~SD10");
+                    MainLabel.Append("~SD16");
                     // Tear / Cut offset
                     MainLabel.Append("~TA-010");
                     // Thermal Transfer
@@ -205,8 +205,8 @@ namespace BarcodePrinter
                 //    MainLabel.Append("^FO30,250,0 ^A0N,45,0 ^FB550,1,0,C ^FN2^FS ");
                 //} else
                 //{
-                    MainLabel.Append("^FO60,50,0 ^BXN,6,200,14,14 ^FN1^FS ");
-                    MainLabel.Append("^FO30,150,0 ^A0N,30,0 ^FB400,1,0,C ^FN2^FS ");
+                    MainLabel.Append("^FO15,40,0 ^BXN,6,200,16,16 ^FN1^FS ");
+                    MainLabel.Append("^FO15,150,0 ^A0N,30,0 ^FB400,1,0,L ^FN2^FS ");
                 //}
                 MainLabel.Append("^XZ");
 
