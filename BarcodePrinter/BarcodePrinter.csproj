@@ -232,5 +232,11 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Assets\popupClose.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Assets\Options.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

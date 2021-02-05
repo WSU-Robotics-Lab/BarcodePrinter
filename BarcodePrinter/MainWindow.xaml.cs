@@ -47,9 +47,10 @@ namespace BarcodePrinter
             clients = new List<Client>();
             customers = new List<Customer>();
             dbCommands = new Repository();
-            GetClients();
+            //GetClinics();
+            GetCustomers();
         }
-        private void GetClients()
+        private void GetClinics()
         {
             //read clients from database
             clients = dbCommands.SelectAllClients();
@@ -57,6 +58,11 @@ namespace BarcodePrinter
             cbxClients.ItemsSource = clients;
         }
 
+        private void GetCustomers()
+        {
+            customers = dbCommands.SelectAllCustomers();
+            customers.ForEach(c => cbxSubCustomers.Items.Add(c.CustomerName));
+        }
 
         private void btnExit_Click(object sender, RoutedEventArgs e)
         {
@@ -78,8 +84,6 @@ namespace BarcodePrinter
         private void btnPrint_Click(object sender, RoutedEventArgs e)
         {
             //TODO: update this for the correct response
-            //if (cbxClients.SelectedIndex == -1) { txtCustNumber.Text = "0"; };
-            //if (cbxSubCustomers.SelectedIndex == -1) { txtSubCustNumber.Text = "0"; };
             int iNumLabels = int.Parse(txtNumLabels.Text.Trim());
             int iStartNum = int.Parse(txtStartNum.Text.Trim());
             int iCustNum = int.Parse((cbxClients.SelectedItem as Client).Number);
@@ -444,7 +448,7 @@ namespace BarcodePrinter
 
         private void cbxCustNumber_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            customers = dbCommands.SelectAllCustomers(cbxClients.SelectedItem as Client);
+            customers = dbCommands.SelectAllCustomers();// cbxClients.SelectedItem as Client);
             //TODO: see if the indices are the same for combobox Items and List
             cbxSubCustomers.ItemsSource = customers;
         }

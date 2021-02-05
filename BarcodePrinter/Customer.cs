@@ -8,13 +8,14 @@ namespace BarcodePrinter
 {
     public class Customer
     {
-        //TODO: update this with the correct fields
-        public string Name;
-        public string Number;
-        public Customer(string name, string number)
+        public int CustomerID;
+        public string CustomerName;
+        public string SubCustomer;
+        public Customer(string name, int ID, string subCustomer)
         {
-            Name = name;
-            Number = number;
+            CustomerName = name;
+            CustomerID = ID;
+            SubCustomer = subCustomer;
         }
     }
 }

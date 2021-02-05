@@ -59,16 +59,16 @@ namespace BarcodePrinter
             }
         }
 
-        public List<Customer> SelectAllCustomers(Client client)
+        public List<Customer> SelectAllCustomers()//Client client)
         {
             using (SqlConnection sqlConn = new SqlConnection(MDLConnect))
             {
-                using (SqlCommand cmd = new SqlCommand("SELECT * FROM V_GC_CLINICS", sqlConn))
+                using (SqlCommand cmd = new SqlCommand("SELECT * FROM Customer", sqlConn))
                 {
-                    var p = new SqlParameter("Client_Num", SqlDbType.NVarChar, 128);
-                    p.Value = client.Number;
+                    //var p = new SqlParameter("Client_Num", SqlDbType.NVarChar, 128);
+                    //p.Value = client.Number;
                     
-                    cmd.Parameters.Add(p);
+                    //cmd.Parameters.Add(p);
 
                     sqlConn.Open();
 
@@ -79,8 +79,10 @@ namespace BarcodePrinter
                     {
                         //TODO: update this with the correct fields
                         customers.Add(new Customer(
-                            reader.GetString(reader.GetOrdinal("Name")),
-                            reader.GetString(reader.GetOrdinal("Number"))));
+                            reader.GetString(reader.GetOrdinal("Customer")),
+                            reader.GetInt32(reader.GetOrdinal("CustomerID")),
+                            reader.GetString(reader.GetOrdinal("SubCustomer"))
+                            ));
                     }
 
                     return customers;
