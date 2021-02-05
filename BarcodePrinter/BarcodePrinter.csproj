@@ -41,7 +41,7 @@
     <ApplicationIcon>Barcode.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Publish|AnyCPU'">
-    <OutputPath>\\ad.wichita.edu\mdl\MDL-Documents\Applications\Label Printer\0.7\</OutputPath>
+    <OutputPath>\\ad.wichita.edu\mdl\MDL-Documents\Applications\Label Printer\V0.8\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <Optimize>true</Optimize>
     <PlatformTarget>AnyCPU</PlatformTarget>
