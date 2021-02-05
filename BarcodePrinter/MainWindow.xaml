@@ -39,8 +39,11 @@
             </Grid.RowDefinitions>
             <RadioButton x:Name="rdo610" GroupName="Printers" Content="Mass Print - 610" Grid.Column="0" Grid.Row="0" VerticalContentAlignment="Center" HorizontalAlignment="Left" VerticalAlignment="Center" Checked="rdoPrinter_Checked"/>
             <TextBlock x:Name="txt610Status" Margin="10" HorizontalAlignment="Stretch" Grid.Column="1" Grid.Row="0" VerticalAlignment="Top"/>
-            <CheckBox x:Name="ckCut" Content="Enable Cutter" Grid.Column="1"  Grid.Row="0" VerticalContentAlignment="Center" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" />
-            <RadioButton x:Name="rdo220"  GroupName="Printers" Content="Print N Peel - 220" Grid.Column="0"  Grid.Row="1" VerticalContentAlignment="Center" HorizontalAlignment="Left" VerticalAlignment="Center" Checked="rdoPrinter_Checked"/>
+            <CheckBox x:Name="ckCut" Content="Enable Cutter" Grid.Column="1"  Grid.Row="0" VerticalContentAlignment="Center" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
+            <RadioButton x:Name="rdo220" GroupName="Printers" Content="Print N Peel - 220" Grid.Column="0"  Grid.Row="1" VerticalContentAlignment="Center" HorizontalAlignment="Left" VerticalAlignment="Center" Checked="rdoPrinter_Checked"/>
+            <CheckBox x:Name="ckPeel1" Content="Printer 1" Grid.Column="1" Grid.Row="1" VerticalAlignment="Top" HorizontalAlignment="Left" VerticalContentAlignment="Center" Checked="PeelPrinter_Checked" Unchecked="PeelPrinter_Checked" IsThreeState="False"/>
+            <CheckBox x:Name="ckPeel2" Content="Printer 2" Grid.Column="1" Grid.Row="1" VerticalAlignment="Bottom" HorizontalAlignment="Left" VerticalContentAlignment="Center" Checked="PeelPrinter_Checked" Unchecked="PeelPrinter_Checked" IsThreeState="False"/>
+
             <TextBlock x:Name="txt220Status" Margin="10" HorizontalAlignment="Stretch" Grid.Column="1" Grid.Row="1"  VerticalAlignment="Center"/>
             <RadioButton x:Name="rdoUSB" GroupName="Printers" Content="Print N Peel - USB" Grid.Column="0"  Grid.Row="2" VerticalContentAlignment="Center" HorizontalAlignment="Left" VerticalAlignment="Center" Checked="rdoPrinter_Checked"/>
             
@@ -48,7 +51,7 @@
             <TextBlock x:Name="txbStatus" Margin="10" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="3"/>
             <TextBlock x:Name="txbQueue"  Margin="10" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="4"/>
 
-            <Button x:Name="btnSettings" HorizontalAlignment="Right" Grid.Column="1" Grid.Row="5" Click="btnSettings_Click">
+            <Button x:Name="btnSettings" HorizontalAlignment="Right" Grid.Column="1" Grid.Row="5" Click="btnSettings_Click" Margin="10">
                 <Image Source="/Assets/Options.png" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
             </Button>
             <Popup x:Name="popSettings" IsOpen="False" Height="300" Width="200" Visibility="Collapsed" Grid.Column="1">
@@ -76,14 +79,14 @@
             </Popup>
         </Grid>
 
-        <TextBlock Text="Customer Number: " HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="0" Grid.Row="0"  />
-        <TextBlock Text="Sub-Customer Number: " HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="0" Grid.Row="1"  />
-        <TextBlock Text="Number of Labels: " HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="0" Grid.Row="2"  />
-        <ComboBox x:Name="cbxClients" Grid.Row="0" Grid.Column="1" VerticalContentAlignment="Center" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="10" SelectionChanged="cbxCustNumber_SelectionChanged"/>
-        <ComboBox x:Name="cbxSubCustomers" Grid.Row="1" Grid.Column="1" VerticalContentAlignment="Center" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="10"/>
-        <TextBox x:Name="txtNumLabels" Grid.Row="2" Grid.Column="1" Width="100" VerticalContentAlignment="Center" HorizontalAlignment="Left" VerticalAlignment="Stretch" Margin="0,10,10,0" LostFocus="TextBox_LostFocus"/>
-        <TextBlock Text="StartNum:" Grid.Row="2" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-        <TextBox x:Name="txtStartNum" Grid.Row="2" Grid.Column="1" Width="100" VerticalContentAlignment="Center" HorizontalAlignment="Right" VerticalAlignment="Stretch" Margin="10,10,0,0" LostFocus="TextBox_LostFocus"/>
+        <TextBlock Text="Customer Number: " HorizontalAlignment="Right" VerticalAlignment="Center" Grid.Column="0" Grid.Row="0"/>
+        <TextBlock Text="Number of Labels: " HorizontalAlignment="Right" VerticalAlignment="Center" Grid.Column="0" Grid.Row="2"/>
+        <ComboBox x:Name="cbxClients" Grid.Row="0" Grid.Column="1" VerticalContentAlignment="Center" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="10"/>
+        <ListBox x:Name="lstFoundclients" Grid.Row="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Margin="10"/>
+        <TextBox x:Name="txtClientSearch" Grid.Row="1" Grid.Column="1" VerticalContentAlignment="Center" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="10" Text="Customer Search..." TextChanged="cbxSubCustomers_TextChanged" GotFocus="txtClientSearch_GotFocus"/>
+        <TextBox x:Name="txtNumLabels" Grid.Row="2" Grid.Column="1" Width="90" VerticalContentAlignment="Center" HorizontalAlignment="Left" VerticalAlignment="Stretch" Margin="10" LostFocus="TextBox_LostFocus"/>
+        <TextBlock Text="StartNum:" Grid.Row="2" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10,0,10,0"/>
+        <TextBox x:Name="txtStartNum" Grid.Row="2" Grid.Column="1" Width="90" VerticalContentAlignment="Center" HorizontalAlignment="Right" VerticalAlignment="Stretch" Margin="10" LostFocus="TextBox_LostFocus"/>
 
         <Button x:Name="btnPrint" Content="Print" IsEnabled="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="10" Grid.Column="0" Grid.Row="4" Click="btnPrint_Click"/>
         <Button x:Name="btnCancel" Content="Cancel Prints" IsEnabled="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="10" Grid.Column="1" Grid.Row="4" Click="btnCancel_Click"/>

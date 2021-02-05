@@ -9,14 +9,24 @@ namespace BarcodePrinter
 {
     public class Printer
     {
-        PrinterSettings printerSettings;
+        
+        private PrinterSettings printerSettings;
         string model = "";
         Zebra.Sdk.Comm.ConnectionA connection;
+        bool labelFormatSet = false;
+        
+        
         public Printer(Zebra.Sdk.Comm.ConnectionA conn, PrinterSettings settings)
         {
             printerSettings = settings;
             connection = conn;
             QueryPrinter();
+        }
+
+        public void Close()
+        {
+            if (connection.Connected)
+                connection.Close();
         }
 
         public void QueryPrinter()
@@ -116,7 +126,8 @@ namespace BarcodePrinter
         {
             return PrintMainLabel(printerSettings.MainLeft, printerSettings.MainTop, printerSettings.MainDarkness, iCustNum, out sent);
         }
-        public bool PrintIndividualLabels(int left, int top, int darkness, int iCustNum, int iStartNum, int iNumLabels)
+
+        public bool SetIndividualLabelFormat(int left, int top, int darkness)
         {
             StringBuilder label = new StringBuilder();
             label.Append("^XA");
@@ -183,12 +194,20 @@ namespace BarcodePrinter
             try
             {
                 if (!connection.Connected) connection.Open();
-                connection.Write(Encoding.ASCII.GetBytes(label.ToString())); 
+                connection.Write(Encoding.ASCII.GetBytes(label.ToString()));
+                labelFormatSet = true;
+                return true;
             }
             catch
             {
                 return false;
             }
+        }
+        public bool PrintIndividualLabels(int left, int top, int darkness, string barcode)
+        {
+            if (!labelFormatSet)
+                SetIndividualLabelFormat(left, top, darkness);
+            
             int PrintNum = 0;
 
             int i = 0;
@@ -198,7 +217,7 @@ namespace BarcodePrinter
             ErrorCheck.AppendLine("~HQES");
             ErrorCheck.AppendLine("^XZ");
 
-            while (i < iNumLabels & attempts <= iNumLabels * 10)
+            while (attempts <= 10)
             {
                 attempts++;
                 string Errors = "";
@@ -225,8 +244,8 @@ namespace BarcodePrinter
                 {
                     //string sNumWDashes = String.Format("{0,0:0000}-{1,0:000}-{2,0:000-000-000}", iCustNum, iSubCustNum, iStartNum + i);
                     //string sNumOnly = String.Format("{0,0:0000}{1,0:000}{2,0:000000000}", iCustNum, iSubCustNum, iStartNum + i);
-                    string sNumWDashes = String.Format("{0,0:0000}-{2,0:000-000-000}", iCustNum, iStartNum + i);
-                    string sNumOnly = String.Format("{0,0:0000}{2,0:000000000}", iCustNum, iStartNum + i);
+                    string sNumWDashes = String.Format("{0,0:000-000-000}", barcode);
+                    string sNumOnly = String.Format("{0,0:000000000}", barcode);
                     StringBuilder individualLabel = new StringBuilder();
                     individualLabel.AppendLine("^XA");
                     individualLabel.AppendLine("^XFR:LABEL.ZPL^FS");

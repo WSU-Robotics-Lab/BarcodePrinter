@@ -10,12 +10,12 @@ namespace BarcodePrinter
     {
         //TODO: update this with the correct fields
         public string Name;
-        public string Number;
+        public string Code;
 
-        public Client(string name, string number)
+        public Client(string name, string code)
         {
             Name = name;
-            Number = number;
+            Code = code;
         }
     }
 }

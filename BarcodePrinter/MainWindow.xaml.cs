@@ -33,35 +33,34 @@ namespace BarcodePrinter
         List<Client> clients;
         List<Customer> customers;
         Repository dbCommands;
+        bool BothPeelsPrinting;
         //private Timer _StatusTimer;
         #endregion
 
         public MainWindow()
         {
+            clients = new List<Client>();
             InitializeComponent();
             _PrinterConnections = new List<Zebra.Sdk.Comm.ConnectionA>();
             _Monitor = new System.Threading.Thread(new System.Threading.ThreadStart(Monitor_Thread));
             Title += " Version: " +  _Version;
             settings = new PrinterSettings(false);
             //read in customers and add to combobox
-            clients = new List<Client>();
             customers = new List<Customer>();
             dbCommands = new Repository();
-            //GetClinics();
-            GetCustomers();
+            GetClinics();
+            //GetCustomers();//doesn't work when remoting in
         }
         private void GetClinics()
         {
             //read clients from database
             clients = dbCommands.SelectAllClients();
-            //TODO: test this to make sure the cbx index is the same as the list index
-            cbxClients.ItemsSource = clients;
+            clients.ForEach(c => cbxClients.Items.Add(string.Format("{0} - {1}", c.Code, c.Name)));
         }
 
         private void GetCustomers()
         {
             customers = dbCommands.SelectAllCustomers();
-            customers.ForEach(c => cbxSubCustomers.Items.Add(c.CustomerName));
         }
 
         private void btnExit_Click(object sender, RoutedEventArgs e)
@@ -83,12 +82,10 @@ namespace BarcodePrinter
 
         private void btnPrint_Click(object sender, RoutedEventArgs e)
         {
-            //TODO: update this for the correct response
             int iNumLabels = int.Parse(txtNumLabels.Text.Trim());
             int iStartNum = int.Parse(txtStartNum.Text.Trim());
-            int iCustNum = int.Parse((cbxClients.SelectedItem as Client).Number);
-            //int iSubCustNum = int.Parse((cbxSubCustomers.SelectedItem as Client).Number);
-
+            int iCustNum = int.Parse((cbxClients.SelectedItem as Client).Code);
+            
             foreach (Zebra.Sdk.Comm.ConnectionA Printer in _PrinterConnections)
             {
                 //if (!Printer.Connected) { Printer.Open(); }
@@ -446,12 +443,23 @@ namespace BarcodePrinter
                 popDarkness.SelectAll();
         }
 
-        private void cbxCustNumber_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void cbxSubCustomers_TextChanged(object sender, TextChangedEventArgs e)
         {
-            customers = dbCommands.SelectAllCustomers();// cbxClients.SelectedItem as Client);
-            //TODO: see if the indices are the same for combobox Items and List
-            cbxSubCustomers.ItemsSource = customers;
+            lstFoundclients.Items.Clear();
+            string txt = (sender as TextBox).Text.ToUpper();
+            foreach(Client c in clients)
+            {
+                if (c.Name.ToUpper().Contains(txt) || c.Code.ToUpper().Contains(txt))
+                    lstFoundclients.Items.Add(string.Format("{0} - {1}", c.Code, c.Name));
+            }
         }
+
+        private void PeelPrinter_Checked(object sender, RoutedEventArgs e)
+        {
+            BothPeelsPrinting = (bool)ckPeel1.IsChecked && (bool)ckPeel2.IsChecked;
+        }
+
+        
     }
 }
 public static class ExtensionMethods
