@@ -90,9 +90,9 @@ namespace BarcodePrinter
         {
             using (SqlConnection sqlConn = new SqlConnection(MDLConnect))
             {
-                using (SqlCommand cmd = new SqlCommand("dbo.AddCustomer", sqlConn))
+                using (SqlCommand cmd = new SqlCommand("dbo.CreateCustomer", sqlConn))
                 {
-                    //TODO: update these fields and params
+                    //todo: update these fields and params
                     var p = new SqlParameter("Client_Num", SqlDbType.NVarChar, 128);
                     p.Value = c.Name;
                     cmd.Parameters.Add(p);
@@ -116,7 +116,7 @@ namespace BarcodePrinter
             using (SqlConnection sqlConnection = new SqlConnection(MDLConnect))
             {
                 //using (OracleCommand = new OracleCommand("SELECT Barcode FROM V_GET_BARCODES, oracleConnection))
-                using (SqlCommand cmd = new SqlCommand("dbo.GetNextBarcode"))//todo: update the command and parameter names
+                using (SqlCommand cmd = new SqlCommand("dbo.GetLastBarcode"))//todo: update the command and parameter names
                 {
                     var p = new SqlParameter("Client_Num", SqlDbType.NVarChar, 128);
                     p.Value = c.Code;

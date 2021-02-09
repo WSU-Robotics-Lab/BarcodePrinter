@@ -6,6 +6,8 @@
 //      Shrinking barcode further
 // 0.8 - 1/13/2021 - Brian Brown
 //      Swapping for 203 dpi 610 printer head.
+// 0.9 - 2/4/2021 - Matthew Drummond
+//      adding database integration
 
 using System;
 using System.Collections.Generic;
@@ -31,7 +33,6 @@ namespace BarcodePrinter
 
         private PrinterSettings settings;
         List<Client> clients;
-        List<Customer> customers;
         Repository dbCommands;
         bool BothPeelsPrinting;
         //private Timer _StatusTimer;
@@ -46,23 +47,19 @@ namespace BarcodePrinter
             Title += " Version: " +  _Version;
             settings = new PrinterSettings(false);
             //read in customers and add to combobox
-            customers = new List<Customer>();
+            
             dbCommands = new Repository();
-            GetClinics();
-            //GetCustomers();//doesn't work when remoting in
+
+            //GetClinics();//doesn't work from NIAR
         }
         private void GetClinics()
         {
             //read clients from database
             clients = dbCommands.SelectAllClients();
             clients.ForEach(c => cbxClients.Items.Add(string.Format("{0} - {1}", c.Code, c.Name)));
+            clients.ForEach(c => lstFoundclients.Items.Add(string.Format("{0} - {1}", c.Code, c.Name)));
         }
-
-        private void GetCustomers()
-        {
-            customers = dbCommands.SelectAllCustomers();
-        }
-
+        
         private void btnExit_Click(object sender, RoutedEventArgs e)
         {
             _Monitor.Abort(); 
@@ -83,7 +80,11 @@ namespace BarcodePrinter
         private void btnPrint_Click(object sender, RoutedEventArgs e)
         {
             int iNumLabels = int.Parse(txtNumLabels.Text.Trim());
+            //get iStartNum from api
             int iStartNum = int.Parse(txtStartNum.Text.Trim());
+            iStartNum = APIAccessor.GetLastBarcode();
+            
+
             int iCustNum = int.Parse((cbxClients.SelectedItem as Client).Code);
             
             foreach (Zebra.Sdk.Comm.ConnectionA Printer in _PrinterConnections)
@@ -98,6 +99,7 @@ namespace BarcodePrinter
                 //txbStatus.Refresh();
                 //string PrinterInformation = Encoding.ASCII.GetString(Printer.SendAndWaitForResponse(Encoding.ASCII.GetBytes(QueryPrinter.ToString()), 1000, 1000, ""));
 
+                
                 Printer p = new Printer(Printer, settings);
                 if (p.PrintMainLabel(iCustNum, out string test))//printed labels
                     txbStatus.Text = "Main Label Printed"; txbStatus.Refresh();
@@ -166,9 +168,21 @@ namespace BarcodePrinter
                 ////}
                 //MainLabel.Append("^XZ");
                 //Printer.Write(Encoding.ASCII.GetBytes(MainLabel.ToString()));
+                int numLabels = Convert.ToInt32(txtNumLabels.Text);
+                for(var i = 0; i < numLabels; i++)
+                {
+                    if (p.PrintIndividualLabels(iCustNum, (iStartNum + i).ToString(), (bool)ckCut.IsChecked, out string error))
+                    {
+                        txbStatus.Text = "Printing Labels"; 
+                        txbStatus.Refresh();
+                    }
+                    else
+                    {
+                        MessageBox.Show(error);
+                        break;
+                    }
+                }
 
-                if (p.PrintIndividualLabels(iCustNum, iStartNum, iNumLabels))
-                    txbStatus.Text = "Printing Labels"; txbStatus.Refresh();
             //    MainLabel = new StringBuilder();
 
 
@@ -339,27 +353,29 @@ namespace BarcodePrinter
 
                 txt220Status.Text = "Number Connected: " + _PrinterConnections.Count.ToString();
             }
-            else if (rdoUSB.IsChecked.HasValue && rdoUSB.IsChecked.Equals(true))
-            {
-                foreach (Zebra.Sdk.Printer.Discovery.DiscoveredUsbPrinter Printer in Zebra.Sdk.Printer.Discovery.UsbDiscoverer.GetZebraUsbPrinters())
-                {
-                    try
-                    {
-                        txtUSBStatus.Text = "Trying to Connect";
-                        txtUSBStatus.Refresh();
-                        Cursor = Cursors.Wait;
 
-                        _PrinterConnections.Add(new Zebra.Sdk.Comm.UsbConnection(Printer.Address));
-                        _PrinterConnections.LastOrDefault().Open();
-                        txtUSBStatus.Text = "USB Connected";
-                        txtUSBStatus.Refresh();
-                    }
-                    catch (Exception) { _PrinterConnections.Remove(_PrinterConnections.LastOrDefault()); }
-                    finally { Cursor = Cursors.Arrow; }
-                }
+            //removing USB printers for now
+            //else if (rdoUSB.IsChecked.HasValue && rdoUSB.IsChecked.Equals(true))
+            //{
+            //    foreach (Zebra.Sdk.Printer.Discovery.DiscoveredUsbPrinter Printer in Zebra.Sdk.Printer.Discovery.UsbDiscoverer.GetZebraUsbPrinters())
+            //    {
+            //        try
+            //        {
+            //            txtUSBStatus.Text = "Trying to Connect";
+            //            txtUSBStatus.Refresh();
+            //            Cursor = Cursors.Wait;
 
-                txtUSBStatus.Text = "Number Connected: " + _PrinterConnections.Count.ToString();
-            }
+            //            _PrinterConnections.Add(new Zebra.Sdk.Comm.UsbConnection(Printer.Address));
+            //            _PrinterConnections.LastOrDefault().Open();
+            //            txtUSBStatus.Text = "USB Connected";
+            //            txtUSBStatus.Refresh();
+            //        }
+            //        catch (Exception) { _PrinterConnections.Remove(_PrinterConnections.LastOrDefault()); }
+            //        finally { Cursor = Cursors.Arrow; }
+            //    }
+
+            //    txtUSBStatus.Text = "Number Connected: " + _PrinterConnections.Count.ToString();
+            //}
             btnPrint.IsEnabled = _PrinterConnections.Count > 0;
             btnCancel.IsEnabled = btnPrint.IsEnabled;
             //_Monitor.Start(); 
@@ -401,7 +417,7 @@ namespace BarcodePrinter
                 Dispatcher.Invoke(new Action(() => this.txbQueue.Text = "Current Printer Queue: " + count.ToString()));
                 Dispatcher.Invoke(new Action(() => this.txbQueue.Refresh()));
                 System.Threading.Thread.Sleep(500); 
-            }   
+            }
         }
 
         private void UxSettings_LostFocus(object sender, RoutedEventArgs e)
@@ -459,7 +475,10 @@ namespace BarcodePrinter
             BothPeelsPrinting = (bool)ckPeel1.IsChecked && (bool)ckPeel2.IsChecked;
         }
 
-        
+        private void txtClientSearch_GotFocus(object sender, RoutedEventArgs e)
+        {
+            txtClientSearch.SelectAll();
+        }
     }
 }
 public static class ExtensionMethods

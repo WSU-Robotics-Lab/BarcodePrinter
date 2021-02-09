@@ -45,8 +45,7 @@
             <CheckBox x:Name="ckPeel2" Content="Printer 2" Grid.Column="1" Grid.Row="1" VerticalAlignment="Bottom" HorizontalAlignment="Left" VerticalContentAlignment="Center" Checked="PeelPrinter_Checked" Unchecked="PeelPrinter_Checked" IsThreeState="False"/>
 
             <TextBlock x:Name="txt220Status" Margin="10" HorizontalAlignment="Stretch" Grid.Column="1" Grid.Row="1"  VerticalAlignment="Center"/>
-            <RadioButton x:Name="rdoUSB" GroupName="Printers" Content="Print N Peel - USB" Grid.Column="0"  Grid.Row="2" VerticalContentAlignment="Center" HorizontalAlignment="Left" VerticalAlignment="Center" Checked="rdoPrinter_Checked"/>
-            
+
             <TextBlock x:Name="txtUSBStatus" Margin="10" HorizontalAlignment="Stretch" Grid.Column="1" Grid.Row="2" VerticalAlignment="Stretch"/>
             <TextBlock x:Name="txbStatus" Margin="10" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="3"/>
             <TextBlock x:Name="txbQueue"  Margin="10" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="4"/>
@@ -54,7 +53,7 @@
             <Button x:Name="btnSettings" HorizontalAlignment="Right" Grid.Column="1" Grid.Row="5" Click="btnSettings_Click" Margin="10">
                 <Image Source="/Assets/Options.png" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
             </Button>
-            <Popup x:Name="popSettings" IsOpen="False" Height="300" Width="200" Visibility="Collapsed" Grid.Column="1">
+            <Popup x:Name="popSettings" IsOpen="False" Height="300" Width="200" Visibility="Collapsed">
                 <Viewbox Stretch="Uniform">
                     <Grid VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Background="LightGray" >
                         <Grid.RowDefinitions>
@@ -82,7 +81,7 @@
         <TextBlock Text="Customer Number: " HorizontalAlignment="Right" VerticalAlignment="Center" Grid.Column="0" Grid.Row="0"/>
         <TextBlock Text="Number of Labels: " HorizontalAlignment="Right" VerticalAlignment="Center" Grid.Column="0" Grid.Row="2"/>
         <ComboBox x:Name="cbxClients" Grid.Row="0" Grid.Column="1" VerticalContentAlignment="Center" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="10"/>
-        <ListBox x:Name="lstFoundclients" Grid.Row="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Margin="10"/>
+        <ListBox x:Name="lstFoundclients" Grid.Row="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Margin="10" />
         <TextBox x:Name="txtClientSearch" Grid.Row="1" Grid.Column="1" VerticalContentAlignment="Center" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="10" Text="Customer Search..." TextChanged="cbxSubCustomers_TextChanged" GotFocus="txtClientSearch_GotFocus"/>
         <TextBox x:Name="txtNumLabels" Grid.Row="2" Grid.Column="1" Width="90" VerticalContentAlignment="Center" HorizontalAlignment="Left" VerticalAlignment="Stretch" Margin="10" LostFocus="TextBox_LostFocus"/>
         <TextBlock Text="StartNum:" Grid.Row="2" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10,0,10,0"/>

@@ -127,7 +127,7 @@ namespace BarcodePrinter
             return PrintMainLabel(printerSettings.MainLeft, printerSettings.MainTop, printerSettings.MainDarkness, iCustNum, out sent);
         }
 
-        public bool SetIndividualLabelFormat(int left, int top, int darkness)
+        public bool SetIndividualLabelFormat(int left, int top, int darkness, out string error)
         {
             StringBuilder label = new StringBuilder();
             label.Append("^XA");
@@ -196,17 +196,26 @@ namespace BarcodePrinter
                 if (!connection.Connected) connection.Open();
                 connection.Write(Encoding.ASCII.GetBytes(label.ToString()));
                 labelFormatSet = true;
+                error = "";
                 return true;
             }
-            catch
+            catch (Exception e)
             {
+                error = e.Message;
                 return false;
             }
+            
         }
-        public bool PrintIndividualLabels(int left, int top, int darkness, string barcode)
+        public bool PrintIndividualLabels(int left, int top, int darkness, string barcode, bool cut, out string error)
         {
             if (!labelFormatSet)
-                SetIndividualLabelFormat(left, top, darkness);
+                if (!SetIndividualLabelFormat(left, top, darkness, out error))
+                    return false;
+                else
+                    error = "";
+            else
+                error = "";
+
             
             int PrintNum = 0;
 
@@ -225,8 +234,9 @@ namespace BarcodePrinter
                 {
                     Errors = Encoding.ASCII.GetString(connection.SendAndWaitForResponse(Encoding.ASCII.GetBytes(ErrorCheck.ToString()), 1000, 1000, ""));
                 }
-                catch
+                catch (Exception e)
                 {
+                    error = e.Message;
                     return false;
                 }
 
@@ -251,11 +261,17 @@ namespace BarcodePrinter
                     individualLabel.AppendLine("^XFR:LABEL.ZPL^FS");
                     individualLabel.Append("^FN1^FD").Append(sNumOnly).AppendLine("^FS");
                     individualLabel.Append("^FN2^FD").Append(sNumWDashes).AppendLine("^FS");
-                    if (printerSettings.UseCutter && i == iNumLabels - 1)
+                    if (cut)
                         individualLabel.Append("^MMC");
                     individualLabel.AppendLine("^XZ");
                     try { connection.Write(Encoding.ASCII.GetBytes(individualLabel.ToString())); }
-                    catch { return false; }
+                    catch (Exception e) { 
+                        if (attempts == 10)
+                        {
+                            error = e.Message; 
+                            return false; 
+                        }
+                    }
                     PrintNum++;
                     i++;
                 }
@@ -263,11 +279,15 @@ namespace BarcodePrinter
 
             return true;
         }
-        public bool PrintIndividualLabels(int iCustNum, int iStartNum, int iNumLabels)
+        public bool PrintIndividualLabels(int iCustNum, string barcode, bool cut, out string error)
         {
-            return PrintIndividualLabels(printerSettings.IndividualLeft, printerSettings.IndividualTop, printerSettings.IndividualDarkness, iCustNum, iStartNum, iNumLabels);
+           return PrintIndividualLabels(
+               printerSettings.IndividualLeft, 
+               printerSettings.IndividualTop, 
+               printerSettings.IndividualDarkness, 
+               iCustNum.ToString() + barcode, 
+               cut, 
+               out error);
         }
-        
-        
     }
 }

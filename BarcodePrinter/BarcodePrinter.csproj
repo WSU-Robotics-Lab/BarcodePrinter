@@ -167,6 +167,8 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="APIAccessor.cs" />
+    <Compile Include="API_URLs.cs" />
     <Compile Include="Client.cs" />
     <Compile Include="Customer.cs" />
     <Compile Include="LabelSettings.cs" />
