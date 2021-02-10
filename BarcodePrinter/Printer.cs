@@ -275,6 +275,7 @@ namespace BarcodePrinter
                     i++;
                 }
             }
+            return false;
         }
         public bool PrintIndividualLabels(int iCustNum, int barcode, bool cut, out string error)
         {
