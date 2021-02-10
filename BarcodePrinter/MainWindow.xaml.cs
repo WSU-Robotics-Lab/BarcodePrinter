@@ -55,63 +55,13 @@ namespace BarcodePrinter
             
             dbCommands = new Repository();
 
-            //GetClinics();//doesn't work from NIAR
+            GetClinics();//doesn't work from NIAR
             test();//todo: remove in production
         }
 
         public async void test()
         {
-            var a = await APIAccessor.BarcodeAccessor.GetAllBarcodesAsync();
-            var b = await APIAccessor.BarcodeAccessor.GetBarcode(3);
-            var c = await APIAccessor.BarcodeAccessor.GetLastBarcodeAsync(3);
-
-            var d = await APIAccessor.CustomerAccessor.GetAllCustomersAsync();
-            var e = await APIAccessor.CustomerAccessor.GetCustomerAsync(2);
-            
-            var f = await APIAccessor.EquipmentAccessor.GetAllEquipmentAsync();
-            var g = await APIAccessor.EquipmentAccessor.GetEquipmentAsync(2);
-
-            var h = await APIAccessor.OrderAccessor.GetAllOrdersAsync();
-            var i = await APIAccessor.OrderAccessor.GetOrderAsync(1);
-
-            var j = await APIAccessor.OrderDetailsAccessor.GetAllOrderDetails();
-            var k = await APIAccessor.OrderDetailsAccessor.GetOrderDetails(2);
-
-            var l = await APIAccessor.OrderStatusAcceessor.GetAllOrderStatusAsync();
-            var m = await APIAccessor.OrderStatusAcceessor.GetOrderStatusAsync(1);
-
-            var n = await APIAccessor.PrintersAccessor.GetAllPrintersAsync();
-            var o = await APIAccessor.PrintersAccessor.GetPrinterAsync(1);
-
-            var p = await APIAccessor.ReagentAccessor.GetAllReagentsAsync();
-            var q = await APIAccessor.ReagentAccessor.GetReagentAsync(1);
-
-            var r = await APIAccessor.SpecimenAccessor.GetAllSpecimensAsync();
-            var s = await APIAccessor.SpecimenAccessor.GetSpecimenAsync(1);
-
-            var t = await APIAccessor.SpecimenStatusAccessor.GetAllSpecimenStatusAsync();
-            var u = await APIAccessor.SpecimenStatusAccessor.GetSpecimenStatusAsync(1);
-
-            var v = await APIAccessor.SpecimenStatusUpdateAccessor.GetAllSpecimenStatusUpdatesAsync();
-            var w = await APIAccessor.SpecimenStatusUpdateAccessor.GetSpecimenStatusUpdateAsync(1);
-
-            var x = await APIAccessor.SpecimenTypeAccessor.GetAllSpecimenTypesAsync();
-            var y = await APIAccessor.SpecimenTypeAccessor.GetSpecimenTypeAsync(1);
-
-            var z = await APIAccessor.StationAccessor.GetAllStationsAsync();
-            var aa = await APIAccessor.StationAccessor.GetStationAsync(1);
-
-            //var ad = await APIAccessor.ThermocyclerAccessor.GetAllThermoCyclersAsync();
-            //var ae = await APIAccessor.ThermocyclerAccessor.GetThermocyclerAsync(1);
-
-            //var af = await APIAccessor.TrackingAccessor.GetAllTrackingsAsync();
-            //var ag = await APIAccessor.TrackingAccessor.GetTrackingAsync(1);
-
-            var ah = await APIAccessor.UserAccessor.GetAllUsersAsync();
-            var ai = await APIAccessor.UserAccessor.GetUserAsync(2);
-
-            var aj = await APIAccessor.UsernameAccessor.GetAllUsernamesAsync();
-            var ak = await APIAccessor.UsernameAccessor.GetUsernameAsync(3);
+           
         }
         private void GetClinics()
         {
@@ -123,7 +73,7 @@ namespace BarcodePrinter
             //clients.Add(new Client("Gina", "tom"));
             
             //read clients from database
-            //clients = dbCommands.SelectAllClients();
+            clients = dbCommands.SelectAllClients();
             clients.ForEach(c => cbxClients.Items.Add(string.Format("{0} - {1}", c.Code, c.Name)));
             grdFoundclients.ItemsSource = clients;
         }
@@ -248,10 +198,10 @@ namespace BarcodePrinter
                 int numLabels = Convert.ToInt32(txtNumLabels.Text);
                 for(var i = 0; i < numLabels; i++)
                 {
-                    int label = iStartNum + i;
-                    if (p.PrintIndividualLabels(iCustNum, label.ToString(), (bool)ckCut.IsChecked, out string error))
+                    int barcode = iStartNum + i;
+                    if (p.PrintIndividualLabels(iCustNum, barcode, (bool)ckCut.IsChecked, out string error))
                     {
-                        txbStatus.Text = "Printing Label: " + label.ToString(); 
+                        txbStatus.Text = "Printing Label: " + barcode.ToString(); 
                         txbStatus.Refresh();
                     }
                     else
@@ -379,81 +329,97 @@ namespace BarcodePrinter
             }
         }
 
-        private void rdoPrinter_Checked(object sender, RoutedEventArgs e)
+        private void attempt610Connection()
         {
-            txt610Status.Text = "";
-            txt220Status.Text = "";
-            txtUSBStatus.Text = "";
-            foreach (Zebra.Sdk.Comm.ConnectionA Conn in _PrinterConnections) { Conn.Close(); }
-            _PrinterConnections.Clear(); 
-            if (rdo610.IsChecked.HasValue && rdo610.IsChecked.Equals(true))
+            try
             {
-                try
-                {
-                    txt610Status.Text = "Trying to Connect";
-                    Cursor = Cursors.Wait;
-                    txt610Status.Refresh();
-                    _PrinterConnections.Add(new Zebra.Sdk.Comm.TcpConnection("lbl-cv-174h-1.dyn.wichita.edu", 9100));
-                    _PrinterConnections.LastOrDefault().Open();
-                    txt610Status.Text = "Connection Open";
-                }
-                catch (Exception) {
-                    _PrinterConnections.Remove(_PrinterConnections.LastOrDefault()); 
-                    txt610Status.Text = "Not Connected";
-                }
-                finally {Cursor = Cursors.Arrow;}
+                txtStatus.Text = "610 - Trying to Connect";
+                Cursor = Cursors.Wait;
+                txtStatus.Refresh();
+                _PrinterConnections.Add(new Zebra.Sdk.Comm.TcpConnection("lbl-cv-174h-1.dyn.wichita.edu", 9100));
+                _PrinterConnections.LastOrDefault().Open();
+                txtStatus.Text = "610 - Connection Open";
             }
-            else if (rdo220.IsChecked.HasValue && rdo220.IsChecked.Equals(true))
+            catch (Exception)
+            {
+                _PrinterConnections.Remove(_PrinterConnections.LastOrDefault());
+                txtStatus.Text = "610 - Not Connected";
+            }
+            finally { Cursor = Cursors.Arrow; }
+        }
+
+        private void attempt220Connection()
+        {
+            try
+            {
+                txtStatus.Text = "220 - Trying to Connect-A";
+                txtStatus.Refresh();
+                Cursor = Cursors.Wait;
+                _PrinterConnections.Add(new Zebra.Sdk.Comm.TcpConnection("lbl-cv-174h-2.dyn.wichita.edu", 9100));
+                _PrinterConnections.LastOrDefault().Open();
+                txtStatus.Text = "220 - Printer A Connected";
+            }
+            catch (Exception) { _PrinterConnections.Remove(_PrinterConnections.LastOrDefault()); }
+            finally { Cursor = Cursors.Arrow; }
+
+            try
+            {
+                txtStatus.Text = "220 - Trying to Connect-B";
+                txtStatus.Refresh();
+                Cursor = Cursors.Wait;
+                _PrinterConnections.Add(new Zebra.Sdk.Comm.TcpConnection("lbl-cv-174h-3.dyn.wichita.edu", 9100));
+                _PrinterConnections.LastOrDefault().Open();
+                txtStatus.Text = "220 - Printer B Connected";
+            }
+            catch (Exception) { _PrinterConnections.Remove(_PrinterConnections.LastOrDefault()); }
+            finally { Cursor = Cursors.Arrow; }
+
+            txtStatus.Text = "Number Connected: " + _PrinterConnections.Count.ToString();
+        }
+
+        private void attemptUSBConnection()
+        {
+            foreach (Zebra.Sdk.Printer.Discovery.DiscoveredUsbPrinter Printer in Zebra.Sdk.Printer.Discovery.UsbDiscoverer.GetZebraUsbPrinters())
             {
                 try
                 {
-                    txt220Status.Text = "Trying to Connect-A";
-                    txt220Status.Refresh();
+                    txtStatus.Text = "Trying to Connect";
+                    txtStatus.Refresh();
                     Cursor = Cursors.Wait;
-                    _PrinterConnections.Add(new Zebra.Sdk.Comm.TcpConnection("lbl-cv-174h-2.dyn.wichita.edu", 9100));
-                    _PrinterConnections.LastOrDefault().Open();
-                    txt220Status.Text = "Printer A Connected";
-                }
-                catch (Exception){_PrinterConnections.Remove(_PrinterConnections.LastOrDefault());}
-                finally { Cursor = Cursors.Arrow; }
 
-                try
-                {
-                    txt220Status.Text = "Trying to Connect-B";
-                    txt220Status.Refresh();
-                    Cursor = Cursors.Wait;
-                    _PrinterConnections.Add(new Zebra.Sdk.Comm.TcpConnection("lbl-cv-174h-3.dyn.wichita.edu", 9100));
+                    _PrinterConnections.Add(new Zebra.Sdk.Comm.UsbConnection(Printer.Address));
                     _PrinterConnections.LastOrDefault().Open();
-                    txt220Status.Text = "Printer B Connected";
+                    txtStatus.Text = "USB Connected";
+                    txtStatus.Refresh();
                 }
                 catch (Exception) { _PrinterConnections.Remove(_PrinterConnections.LastOrDefault()); }
                 finally { Cursor = Cursors.Arrow; }
-
-                txt220Status.Text = "Number Connected: " + _PrinterConnections.Count.ToString();
             }
+        }
 
+        private void attemptAllConnections()
+        {
+            foreach (Zebra.Sdk.Comm.ConnectionA Conn in _PrinterConnections) { Conn.Close(); }
+            _PrinterConnections.Clear();
+            
+            attempt610Connection();
+            attempt220Connection();
+        }
+        private void rdoPrinter_Checked(object sender, RoutedEventArgs e)
+        {
+            txtStatus.Text = "";
+            if (rdo610.IsChecked.HasValue && rdo610.IsChecked.Equals(true))
+                attempt610Connection();
+            else if (rdo220.IsChecked.HasValue && rdo220.IsChecked.Equals(true))
+                attempt220Connection();
             //removing USB printers for now
             //else if (rdoUSB.IsChecked.HasValue && rdoUSB.IsChecked.Equals(true))
             //{
-            //    foreach (Zebra.Sdk.Printer.Discovery.DiscoveredUsbPrinter Printer in Zebra.Sdk.Printer.Discovery.UsbDiscoverer.GetZebraUsbPrinters())
-            //    {
-            //        try
-            //        {
-            //            txtUSBStatus.Text = "Trying to Connect";
-            //            txtUSBStatus.Refresh();
-            //            Cursor = Cursors.Wait;
-
-            //            _PrinterConnections.Add(new Zebra.Sdk.Comm.UsbConnection(Printer.Address));
-            //            _PrinterConnections.LastOrDefault().Open();
-            //            txtUSBStatus.Text = "USB Connected";
-            //            txtUSBStatus.Refresh();
-            //        }
-            //        catch (Exception) { _PrinterConnections.Remove(_PrinterConnections.LastOrDefault()); }
-            //        finally { Cursor = Cursors.Arrow; }
-            //    }
-
-            //    txtUSBStatus.Text = "Number Connected: " + _PrinterConnections.Count.ToString();
+            //       attemptUSBConnection();
             //}
+
+            txtStatus.Text = "Number Connected: " + _PrinterConnections.Count.ToString();
+            
             btnPrint.IsEnabled = _PrinterConnections.Count > 0;
             btnCancel.IsEnabled = btnPrint.IsEnabled;
             //_Monitor.Start(); 
@@ -556,7 +522,7 @@ namespace BarcodePrinter
 
         private void PeelPrinter_Checked(object sender, RoutedEventArgs e)
         {
-            BothPeelsPrinting = (bool)ckPeel1.IsChecked && (bool)ckPeel2.IsChecked;
+            BothPeelsPrinting = (bool)ckPrinterA.IsChecked && (bool)ckPrinterB.IsChecked;
         }
 
         private void txtClientSearch_GotFocus(object sender, RoutedEventArgs e)
@@ -574,24 +540,25 @@ namespace BarcodePrinter
             SelectedClient = clients[cbxClients.SelectedIndex];
         }
 
-        private void popBtnPrintTest_Click(object sender, RoutedEventArgs e)
-        {
-            if (_PrinterConnections.Count == 0 || _PrinterConnections == null)
-            {
-                MessageBox.Show("No printers available");
-                return;
-            }
-
-            Printer printer = new Printer(_PrinterConnections[selectedPrinter], settings);
-
-            printer.PrintIndividualLabels(1234, "########", (bool)ckCut.IsChecked, out string error);
-            if (!string.IsNullOrEmpty(error)) MessageBox.Show(error);
-
-        }
-
         private void grdFoundclients_SelectedCellsChanged(object sender, SelectedCellsChangedEventArgs e)
         {
             SelectedClient = grdFoundclients.SelectedItem as Client;
+        }
+
+        private void popBtnTestPrint_Click(object sender, RoutedEventArgs e)
+        {
+            if (_PrinterConnections.Count == 0 || _PrinterConnections == null) 
+            {
+                attemptAllConnections();
+                if (_PrinterConnections.Count == 0) { MessageBox.Show("No printers"); return; }
+            }
+            foreach (Zebra.Sdk.Comm.ConnectionA printer in _PrinterConnections)
+            {
+                Printer p = new Printer(printer, settings);
+
+                p.PrintTestLabel(out string error);
+                if (!string.IsNullOrEmpty(error)) MessageBox.Show("Problem printing to " + printer.SimpleConnectionName + " : " + error);
+            }
         }
     }
 }
