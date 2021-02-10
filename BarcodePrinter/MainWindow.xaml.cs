@@ -17,6 +17,8 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
+using API_Lib.Routes;
+using API_Lib.Models;
 
 namespace BarcodePrinter
 {
@@ -32,9 +34,12 @@ namespace BarcodePrinter
         private System.Threading.Thread _Monitor;
 
         private PrinterSettings settings;
+        int selectedPrinter = -1;
         List<Client> clients;
+        Client SelectedClient;
         Repository dbCommands;
         bool BothPeelsPrinting;
+        
         //private Timer _StatusTimer;
         #endregion
 
@@ -51,13 +56,76 @@ namespace BarcodePrinter
             dbCommands = new Repository();
 
             //GetClinics();//doesn't work from NIAR
+            test();//todo: remove in production
+        }
+
+        public async void test()
+        {
+            var a = await APIAccessor.BarcodeAccessor.GetAllBarcodesAsync();
+            var b = await APIAccessor.BarcodeAccessor.GetBarcode(3);
+            var c = await APIAccessor.BarcodeAccessor.GetLastBarcodeAsync(3);
+
+            var d = await APIAccessor.CustomerAccessor.GetAllCustomersAsync();
+            var e = await APIAccessor.CustomerAccessor.GetCustomerAsync(2);
+            
+            var f = await APIAccessor.EquipmentAccessor.GetAllEquipmentAsync();
+            var g = await APIAccessor.EquipmentAccessor.GetEquipmentAsync(2);
+
+            var h = await APIAccessor.OrderAccessor.GetAllOrdersAsync();
+            var i = await APIAccessor.OrderAccessor.GetOrderAsync(1);
+
+            var j = await APIAccessor.OrderDetailsAccessor.GetAllOrderDetails();
+            var k = await APIAccessor.OrderDetailsAccessor.GetOrderDetails(2);
+
+            var l = await APIAccessor.OrderStatusAcceessor.GetAllOrderStatusAsync();
+            var m = await APIAccessor.OrderStatusAcceessor.GetOrderStatusAsync(1);
+
+            var n = await APIAccessor.PrintersAccessor.GetAllPrintersAsync();
+            var o = await APIAccessor.PrintersAccessor.GetPrinterAsync(1);
+
+            var p = await APIAccessor.ReagentAccessor.GetAllReagentsAsync();
+            var q = await APIAccessor.ReagentAccessor.GetReagentAsync(1);
+
+            var r = await APIAccessor.SpecimenAccessor.GetAllSpecimensAsync();
+            var s = await APIAccessor.SpecimenAccessor.GetSpecimenAsync(1);
+
+            var t = await APIAccessor.SpecimenStatusAccessor.GetAllSpecimenStatusAsync();
+            var u = await APIAccessor.SpecimenStatusAccessor.GetSpecimenStatusAsync(1);
+
+            var v = await APIAccessor.SpecimenStatusUpdateAccessor.GetAllSpecimenStatusUpdatesAsync();
+            var w = await APIAccessor.SpecimenStatusUpdateAccessor.GetSpecimenStatusUpdateAsync(1);
+
+            var x = await APIAccessor.SpecimenTypeAccessor.GetAllSpecimenTypesAsync();
+            var y = await APIAccessor.SpecimenTypeAccessor.GetSpecimenTypeAsync(1);
+
+            var z = await APIAccessor.StationAccessor.GetAllStationsAsync();
+            var aa = await APIAccessor.StationAccessor.GetStationAsync(1);
+
+            //var ad = await APIAccessor.ThermocyclerAccessor.GetAllThermoCyclersAsync();
+            //var ae = await APIAccessor.ThermocyclerAccessor.GetThermocyclerAsync(1);
+
+            //var af = await APIAccessor.TrackingAccessor.GetAllTrackingsAsync();
+            //var ag = await APIAccessor.TrackingAccessor.GetTrackingAsync(1);
+
+            var ah = await APIAccessor.UserAccessor.GetAllUsersAsync();
+            var ai = await APIAccessor.UserAccessor.GetUserAsync(2);
+
+            var aj = await APIAccessor.UsernameAccessor.GetAllUsernamesAsync();
+            var ak = await APIAccessor.UsernameAccessor.GetUsernameAsync(3);
         }
         private void GetClinics()
         {
+            //for testing
+            //clients.Add(new Client("tim", "tom"));
+            //clients.Add(new Client("Jim", "tom"));
+            //clients.Add(new Client("Kevin", "tom"));
+            //clients.Add(new Client("Beuler", "tom"));
+            //clients.Add(new Client("Gina", "tom"));
+            
             //read clients from database
-            clients = dbCommands.SelectAllClients();
+            //clients = dbCommands.SelectAllClients();
             clients.ForEach(c => cbxClients.Items.Add(string.Format("{0} - {1}", c.Code, c.Name)));
-            clients.ForEach(c => lstFoundclients.Items.Add(string.Format("{0} - {1}", c.Code, c.Name)));
+            grdFoundclients.ItemsSource = clients;
         }
         
         private void btnExit_Click(object sender, RoutedEventArgs e)
@@ -82,11 +150,20 @@ namespace BarcodePrinter
             int iNumLabels = int.Parse(txtNumLabels.Text.Trim());
             //get iStartNum from api
             int iStartNum = int.Parse(txtStartNum.Text.Trim());
-            iStartNum = APIAccessor.GetLastBarcode();
-            
+            //iStartNum = APIAccessor.GetLastBarcode();
 
-            int iCustNum = int.Parse((cbxClients.SelectedItem as Client).Code);
-            
+            //TODO: see if the customer exists
+            //if (APIAccessor.CustomerAccessor.CustomerExists(SelectedClient.Code.Substring(1)))
+            //    iStartNum = (await APIAccessor.BarcodeAccessor.GetLastBarcodeAsync(_)).LastNum;
+            //else//get start number
+
+            ////get iStartNum from api
+
+            //    var _ = Int32.Parse(SelectedClient.Code.Substring(1));
+
+
+            int iCustNum = int.Parse((cbxClients.SelectedItem as Client).Code.Substring(1));
+
             foreach (Zebra.Sdk.Comm.ConnectionA Printer in _PrinterConnections)
             {
                 //if (!Printer.Connected) { Printer.Open(); }
@@ -171,9 +248,10 @@ namespace BarcodePrinter
                 int numLabels = Convert.ToInt32(txtNumLabels.Text);
                 for(var i = 0; i < numLabels; i++)
                 {
-                    if (p.PrintIndividualLabels(iCustNum, (iStartNum + i).ToString(), (bool)ckCut.IsChecked, out string error))
+                    int label = iStartNum + i;
+                    if (p.PrintIndividualLabels(iCustNum, label.ToString(), (bool)ckCut.IsChecked, out string error))
                     {
-                        txbStatus.Text = "Printing Labels"; 
+                        txbStatus.Text = "Printing Label: " + label.ToString(); 
                         txbStatus.Refresh();
                     }
                     else
@@ -461,13 +539,19 @@ namespace BarcodePrinter
 
         private void cbxSubCustomers_TextChanged(object sender, TextChangedEventArgs e)
         {
-            lstFoundclients.Items.Clear();
+            if ("Customer Search...".Contains(txtClientSearch.Text)) return;
+
+
+            grdFoundclients.ItemsSource = null;
+            grdFoundclients.Items.Clear();
             string txt = (sender as TextBox).Text.ToUpper();
-            foreach(Client c in clients)
+            List<Client> found = new List<Client>();
+            foreach (Client c in clients)
             {
                 if (c.Name.ToUpper().Contains(txt) || c.Code.ToUpper().Contains(txt))
-                    lstFoundclients.Items.Add(string.Format("{0} - {1}", c.Code, c.Name));
+                    found.Add(c);
             }
+            grdFoundclients.ItemsSource = found;
         }
 
         private void PeelPrinter_Checked(object sender, RoutedEventArgs e)
@@ -477,7 +561,37 @@ namespace BarcodePrinter
 
         private void txtClientSearch_GotFocus(object sender, RoutedEventArgs e)
         {
-            txtClientSearch.SelectAll();
+            txtClientSearch.Text = "";
+        }
+
+        private void txtClientSearch_LostFocus(object sender, RoutedEventArgs e)
+        {
+            txtClientSearch.Text = "Customer Search...";
+        }
+
+        private void cbxClients_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            SelectedClient = clients[cbxClients.SelectedIndex];
+        }
+
+        private void popBtnPrintTest_Click(object sender, RoutedEventArgs e)
+        {
+            if (_PrinterConnections.Count == 0 || _PrinterConnections == null)
+            {
+                MessageBox.Show("No printers available");
+                return;
+            }
+
+            Printer printer = new Printer(_PrinterConnections[selectedPrinter], settings);
+
+            printer.PrintIndividualLabels(1234, "########", (bool)ckCut.IsChecked, out string error);
+            if (!string.IsNullOrEmpty(error)) MessageBox.Show(error);
+
+        }
+
+        private void grdFoundclients_SelectedCellsChanged(object sender, SelectedCellsChangedEventArgs e)
+        {
+            SelectedClient = grdFoundclients.SelectedItem as Client;
         }
     }
 }

@@ -80,8 +80,8 @@
 
         <TextBlock Text="Customer Number: " HorizontalAlignment="Right" VerticalAlignment="Center" Grid.Column="0" Grid.Row="0"/>
         <TextBlock Text="Number of Labels: " HorizontalAlignment="Right" VerticalAlignment="Center" Grid.Column="0" Grid.Row="2"/>
-        <ComboBox x:Name="cbxClients" Grid.Row="0" Grid.Column="1" VerticalContentAlignment="Center" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="10"/>
-        <ListBox x:Name="lstFoundclients" Grid.Row="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Margin="10" />
+        <ComboBox x:Name="cbxClients" Grid.Row="0" Grid.Column="1" VerticalContentAlignment="Center" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="10" SelectionChanged="cbxClients_SelectionChanged"/>
+        <DataGrid x:Name="grdFoundclients" Grid.Row="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Margin="10" IsReadOnly="True" SelectedCellsChanged="grdFoundclients_SelectedCellsChanged"/>
         <TextBox x:Name="txtClientSearch" Grid.Row="1" Grid.Column="1" VerticalContentAlignment="Center" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="10" Text="Customer Search..." TextChanged="cbxSubCustomers_TextChanged" GotFocus="txtClientSearch_GotFocus"/>
         <TextBox x:Name="txtNumLabels" Grid.Row="2" Grid.Column="1" Width="90" VerticalContentAlignment="Center" HorizontalAlignment="Left" VerticalAlignment="Stretch" Margin="10" LostFocus="TextBox_LostFocus"/>
         <TextBlock Text="StartNum:" Grid.Row="2" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10,0,10,0"/>

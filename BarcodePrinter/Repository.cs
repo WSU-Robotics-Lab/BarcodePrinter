@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 using System.Transactions;
 using System.Windows;
 using Oracle.ManagedDataAccess.Client;
+using API_Lib.Models;
 
 
 namespace BarcodePrinter
@@ -75,8 +76,8 @@ namespace BarcodePrinter
                     {
                         //TODO: update this with the correct fields
                         customers.Add(new Customer(
-                            reader.GetString(reader.GetOrdinal("Customer")),
                             reader.GetInt32(reader.GetOrdinal("CustomerID")),
+                            reader.GetString(reader.GetOrdinal("Customer")),
                             reader.GetString(reader.GetOrdinal("SubCustomer"))
                             ));
                     }
