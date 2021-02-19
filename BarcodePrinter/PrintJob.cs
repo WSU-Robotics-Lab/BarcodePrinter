@@ -7,7 +7,7 @@ using static BarcodePrinter.PrinterSettings;
 
 namespace BarcodePrinter
 {
-    public class Printer
+    public class PrintJob
     {
         
         private PrinterSettings printerSettings;
@@ -16,11 +16,17 @@ namespace BarcodePrinter
         bool labelFormatSet = false;
         
         
-        public Printer(Zebra.Sdk.Comm.ConnectionA conn, PrinterSettings settings)
+        public PrintJob(Zebra.Sdk.Comm.ConnectionA conn, PrinterSettings settings)
         {
             printerSettings = settings;
             connection = conn;
             QueryPrinter();
+        }
+        
+        ~PrintJob()
+        {
+            if (connection.Connected) 
+                connection.Close(); 
         }
 
         public void Close()

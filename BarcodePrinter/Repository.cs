@@ -61,31 +61,31 @@ namespace BarcodePrinter
             }
         }
 
-        public List<Customer> SelectAllCustomers()
-        {
-            using (SqlConnection sqlConn = new SqlConnection(MDLConnect))
-            {
-                using (SqlCommand cmd = new SqlCommand("SELECT * FROM Customer", sqlConn))
-                {
-                    sqlConn.Open();
+        //public List<Customer> SelectAllCustomers()
+        //{
+        //    using (SqlConnection sqlConn = new SqlConnection(MDLConnect))
+        //    {
+        //        using (SqlCommand cmd = new SqlCommand("SELECT * FROM Customer", sqlConn))
+        //        {
+        //            sqlConn.Open();
 
-                    SqlDataReader reader = cmd.ExecuteReader();
+        //            SqlDataReader reader = cmd.ExecuteReader();
 
-                    List<Customer> customers = new List<Customer>();
-                    while (reader.Read())
-                    {
-                        //TODO: update this with the correct fields
-                        customers.Add(new Customer(
-                            reader.GetInt32(reader.GetOrdinal("CustomerID")),
-                            reader.GetString(reader.GetOrdinal("Customer")),
-                            reader.GetString(reader.GetOrdinal("SubCustomer"))
-                            ));
-                    }
+        //            List<Customer> customers = new List<Customer>();
+        //            while (reader.Read())
+        //            {
+        //                //TODO: update this with the correct fields
+        //                customers.Add(new Customer(
+        //                    reader.GetInt32(reader.GetOrdinal("CustomerID")),
+        //                    reader.GetString(reader.GetOrdinal("Customer")),
+        //                    reader.GetString(reader.GetOrdinal("SubCustomer"))
+        //                    ));
+        //            }
 
-                    return customers;
-                }
-            }
-        }
+        //            return customers;
+        //        }
+        //    }
+        //}
 
         public bool TryAddCustomer(Client c)
         {

@@ -19,6 +19,7 @@ using System.Windows.Input;
 using System.Windows.Threading;
 using API_Lib.Routes;
 using API_Lib.Models;
+using API_Lib.Models.ProcedureModels;
 
 namespace BarcodePrinter
 {
@@ -53,281 +54,35 @@ namespace BarcodePrinter
             settings = new PrinterSettings(false);
             //read in customers and add to combobox
             
-            dbCommands = new Repository();
+            //dbCommands = new Repository();
 
-            GetClinics();//doesn't work from NIAR
-            test();//todo: remove in production
-        }
-
-        public async void test()
-        {
-           
-        }
-        private void GetClinics()
-        {
-            //for testing
-            //clients.Add(new Client("tim", "tom"));
-            //clients.Add(new Client("Jim", "tom"));
-            //clients.Add(new Client("Kevin", "tom"));
-            //clients.Add(new Client("Beuler", "tom"));
-            //clients.Add(new Client("Gina", "tom"));
-            
-            //read clients from database
-            clients = dbCommands.SelectAllClients();
-            clients.ForEach(c => cbxClients.Items.Add(string.Format("{0} - {1}", c.Code, c.Name)));
-            grdFoundclients.ItemsSource = clients;
-        }
-        
-        private void btnExit_Click(object sender, RoutedEventArgs e)
-        {
-            _Monitor.Abort(); 
-            foreach (Zebra.Sdk.Comm.ConnectionA Printer in _PrinterConnections) Printer.Close();
-            Application.Current.Shutdown();
+            //GetClinics();//doesn't work from NIAR
+            test();
         }
 
-        private void TextBox_LostFocus(object sender, RoutedEventArgs e)
+        private async void test()
         {
-            TextBox tmpBox = sender as TextBox;
-            int txtNumber;
-            if (!int.TryParse(tmpBox.Text, out txtNumber))
+            APIAccessor.SetAuth("mdrummond", "pass");
+            var labels = await APIAccessor.LabelAccessor.GetAllLabelsAsync();
+            API_Lib.Models.ProcedureModels.OutputModels.CreateLabelOutput c;
+
+
+            if (labels.Count == 0)
             {
-                MessageBox.Show("Value must be an integer!");
+                c = await APIAccessor.LabelAccessor.PostCreateLabel(new API_Lib.Models.ProcedureModels.InputModels.CreateLabelInput("1235", "Jeff", 18, 3));
+            }
+               
+            try
+            {
+                var b = await APIAccessor.LabelAccessor.GetPrintLabelAsync(18);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
             }
         }
 
-        private void btnPrint_Click(object sender, RoutedEventArgs e)
-        {
-            int iNumLabels = int.Parse(txtNumLabels.Text.Trim());
-            //get iStartNum from api
-            int iStartNum = int.Parse(txtStartNum.Text.Trim());
-            //iStartNum = APIAccessor.GetLastBarcode();
-
-            //TODO: see if the customer exists
-            //if (APIAccessor.CustomerAccessor.CustomerExists(SelectedClient.Code.Substring(1)))
-            //    iStartNum = (await APIAccessor.BarcodeAccessor.GetLastBarcodeAsync(_)).LastNum;
-            //else//get start number
-
-            ////get iStartNum from api
-
-            //    var _ = Int32.Parse(SelectedClient.Code.Substring(1));
-
-
-            int iCustNum = int.Parse((cbxClients.SelectedItem as Client).Code.Substring(1));
-
-            foreach (Zebra.Sdk.Comm.ConnectionA Printer in _PrinterConnections)
-            {
-                //if (!Printer.Connected) { Printer.Open(); }
-                //StringBuilder QueryPrinter = new StringBuilder();
-                //QueryPrinter.AppendLine("^XA");
-                //QueryPrinter.AppendLine("~HI");
-                //QueryPrinter.AppendLine("^XZ");
-                
-                //txbStatus.Text = txbStatus.Text + "Checking Printer Information for Printer" + System.Environment.NewLine;
-                //txbStatus.Refresh();
-                //string PrinterInformation = Encoding.ASCII.GetString(Printer.SendAndWaitForResponse(Encoding.ASCII.GetBytes(QueryPrinter.ToString()), 1000, 1000, ""));
-
-                
-                Printer p = new Printer(Printer, settings);
-                if (p.PrintMainLabel(iCustNum, out string test))//printed labels
-                    txbStatus.Text = "Main Label Printed"; txbStatus.Refresh();
-
-                //StringBuilder MainLabel = new StringBuilder();
-
-                //MainLabel.Append("^XA");
-                //MainLabel.Append("^LH0,0 ");
-                //MainLabel.Append("^LT0");
-                //MainLabel.Append("^LS0");
-                //if (PrinterInformation.Contains("610"))
-                //{
-                //    // Print rate 
-                //    MainLabel.Append("^PR6");
-                //    // Darkness
-                //    MainLabel.Append("~SD16");
-                //    // Tear / Cut offset
-                //    MainLabel.Append("~TA-010");
-                //    // Thermal Transfer
-                //    MainLabel.Append("^MTD");
-                //    // print mode, T=tear, P=peel, C=cutter
-                //    if (rdo610.IsChecked.HasValue && ckCut.IsChecked.Value.Equals(true))
-                //        MainLabel.Append("^MMC");
-                //    else
-                //        MainLabel.Append("^MMT");
-                //}
-                //else if (PrinterInformation.Contains("220"))
-                //{
-                //    MainLabel.Append("^PR1");
-                //    MainLabel.Append("~SD12");
-                //    MainLabel.Append("~TA-010");
-                //    MainLabel.Append("^MTD");
-                //    MainLabel.Append("^MMP");
-                //}
-                //else if (PrinterInformation.Contains("420"))
-                //{
-                //    MainLabel.Append("^PR1");
-                //    MainLabel.Append("~SD10");
-                //    MainLabel.Append("~TA020");
-                //    MainLabel.Append("^MTD");
-                //    MainLabel.Append("^MMP");
-                //}
-                //else if (PrinterInformation.Contains("410"))
-                //{
-                //    MainLabel.Append("^PR1");
-                //    MainLabel.Append("~SD10");
-                //    MainLabel.Append("~TA020");
-                //    MainLabel.Append("^MTD");
-                //    MainLabel.Append("^MMT");
-                //}
-                ////if (PrinterInformation.Contains("610"))
-                ////{
-                ////    //fo x, y, justification (0,1,2)
-                ////    //bx orientation, height, quality, columns, rows
-                ////    MainLabel.Append("^FO60,50,0 ^BXN,12,200,14,14 ^FD" + iCustNum.ToString() + " ^FS ");
-                ////    //a font orientation, character height (dots), width(dots)
-                ////    //fb width (dots), numlines, add or delete space, justification, hanging indent
-                ////    MainLabel.Append("^FO200,80,0 ^A0N,60,0 ^FB400,1,0,C ^FD CUST ^FS");
-                ////    MainLabel.Append("^FO100,150,0 ^A0N,60,0 ^FB550,1,0,C ^FD" + iCustNum.ToString() + "^FS ");
-                ////}
-                ////else
-                ////{
-                //MainLabel.Append("^FO60,50,0 ^BXN,6,200,18,18 ^FD" + iCustNum.ToString() + " ^FS");
-                //MainLabel.Append("^FO60,50,0 ^A0N,60,0 ^FB400,1,0,C ^FD CUST ^FS");
-                //MainLabel.Append("^FO60,100,0 ^A0N,60,0 ^FB400,1,0,C ^FD" + iCustNum.ToString() + " ^FS");
-                ////}
-                //MainLabel.Append("^XZ");
-                //Printer.Write(Encoding.ASCII.GetBytes(MainLabel.ToString()));
-                int numLabels = Convert.ToInt32(txtNumLabels.Text);
-                for(var i = 0; i < numLabels; i++)
-                {
-                    int barcode = iStartNum + i;
-                    if (p.PrintIndividualLabels(iCustNum, barcode, (bool)ckCut.IsChecked, out string error))
-                    {
-                        txbStatus.Text = "Printing Label: " + barcode.ToString(); 
-                        txbStatus.Refresh();
-                    }
-                    else
-                    {
-                        MessageBox.Show(error);
-                        break;
-                    }
-                }
-
-            //    MainLabel = new StringBuilder();
-
-
-            //    MainLabel.Append("^XA");
-            //    MainLabel.Append("^DFR:LABEL.ZPL^FS");
-            //    MainLabel.Append("^LH0,0 ");
-            //    MainLabel.Append("^LT0");
-            //    MainLabel.Append("^LS0");
-
-
-            //    if (PrinterInformation.Contains("610"))
-            //    {
-            //        // Print rate 
-            //        MainLabel.Append("^PR6");
-            //        // Darkness
-            //        MainLabel.Append("~SD16");
-            //        // Tear / Cut offset
-            //        MainLabel.Append("~TA-010");
-            //        // Thermal Transfer
-            //        MainLabel.Append("^MTD");
-            //        // print mode, T=tear, P=peel, C=cutter
-            //        if (ckCut.IsChecked.HasValue && ckCut.IsChecked.Value.Equals(true))
-            //            MainLabel.Append("^MMC");
-            //        else
-            //            MainLabel.Append("^MMT");
-            //    }
-            //    else if (PrinterInformation.Contains("220"))
-            //    {
-            //        MainLabel.Append("^PR1");
-            //        MainLabel.Append("~SD12");
-            //        MainLabel.Append("~TA-010");
-            //        MainLabel.Append("^MTD");
-            //        MainLabel.Append("^MMP");
-            //    }
-            //    else if (PrinterInformation.Contains("420"))
-            //    {
-            //        MainLabel.Append("^PR1");
-            //        MainLabel.Append("~SD10");
-            //        MainLabel.Append("~TA020");
-            //        MainLabel.Append("^MTD");
-            //        MainLabel.Append("^MMP");
-            //    }
-            //    else if (PrinterInformation.Contains("410"))
-            //    {
-            //        MainLabel.Append("^PR1");
-            //        MainLabel.Append("~SD10");
-            //        MainLabel.Append("~TA020");
-            //        MainLabel.Append("^MTD");
-            //        MainLabel.Append("^MMT");
-            //    }
-            //    //if (PrinterInformation.Contains("610"))
-            //    //{
-            //    //    //fo x, y, justification (0,1,2)
-            //    //    //bx orientation, height, quality, columns, rows
-            //    //    MainLabel.Append("^FO60,50,0 ^BXN,10,200,14,14 ^FN1^FS ");
-            //    //    //a font orientation, character height (dots), width(dots)
-            //    //    //fb width (dots), numlines, add or delete space, justification, hanging indent
-            //    //    MainLabel.Append("^FO30,250,0 ^A0N,45,0 ^FB550,1,0,C ^FN2^FS ");
-            //    //} else
-            //    //{
-            //        MainLabel.Append("^FO15,40,0 ^BXN,6,200,16,16 ^FN1^FS ");
-            //        MainLabel.Append("^FO15,150,0 ^A0N,30,0 ^FB400,1,0,L ^FN2^FS ");
-            //    //}
-            //    MainLabel.Append("^XZ");
-
-            //    txbStatus.Text =  "Sending Main Label Information" + System.Environment.NewLine + txbStatus.Text;
-            //    txbStatus.Refresh();
-
-            //    Printer.Write(Encoding.ASCII.GetBytes(MainLabel.ToString()));
-            //}
-
-            //int PrintNum = 0;
-            //int i = 0;
-            //int attempts = 0;
-            //StringBuilder ErrorCheck = new StringBuilder();
-            //ErrorCheck.AppendLine("^XA");
-            //ErrorCheck.AppendLine("~HQES");
-            //ErrorCheck.AppendLine("^XZ");
-
-            //while (i < iNumLabels & attempts <= iNumLabels * 10)
-            //{
-            //    attempts++;
-            //    string Errors = Encoding.ASCII.GetString(_PrinterConnections[PrintNum].SendAndWaitForResponse(Encoding.ASCII.GetBytes(ErrorCheck.ToString()), 1000, 1000, ""));
-            //    string[] ErrorValues = Errors.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None).Select(respv => respv.Trim()).ToArray();
-            //    bool errValue = false;
-            //    foreach (string value in ErrorValues)
-            //    {
-            //        if (value.Contains("ERROR") | value.Contains("WARNING"))
-            //        {
-            //            string[] values = value.Split(':').Select(respv => respv.Trim()).ToArray();
-            //            errValue = errValue & values[1].StartsWith("1"); 
-            //        }
-            //    }
-            //    if (!errValue)
-            //    {
-            //        string sNumWDashes = String.Format("{0,0:0000}-{1,0:000}-{2,0:000-000-000}", iCustNum, iSubCustNum, iStartNum + i);
-            //        string sNumOnly = String.Format("{0,0:0000}{1,0:000}{2,0:000000000}", iCustNum, iSubCustNum, iStartNum + i);
-
-            //        StringBuilder individualLabel = new StringBuilder();
-            //        individualLabel.AppendLine("^XA");
-            //        individualLabel.AppendLine("^XFR:LABEL.ZPL^FS");
-            //        individualLabel.Append("^FN1^FD").Append(sNumOnly).AppendLine("^FS");
-            //        individualLabel.Append("^FN2^FD").Append(sNumWDashes).AppendLine("^FS");
-            //        if (rdo610.IsChecked.Equals(true) && i == iNumLabels-1)
-            //            individualLabel.Append("^MMC");
-            //        individualLabel.AppendLine("^XZ");
-
-            //        txbStatus.Text = sNumWDashes + " to printer " + PrintNum.ToString() + System.Environment.NewLine + txbStatus.Text;
-            //        txbStatus.Refresh();
-            //        _PrinterConnections[PrintNum].Write(Encoding.ASCII.GetBytes(individualLabel.ToString()));
-            //        PrintNum++;
-            //        if (PrintNum >= _PrinterConnections.Count) PrintNum = 0;
-            //        i++;
-
-            //    }
-            }
-        }
+        #region printer connections
 
         private void attempt610Connection()
         {
@@ -405,6 +160,85 @@ namespace BarcodePrinter
             attempt610Connection();
             attempt220Connection();
         }
+
+        #endregion
+
+        private void GetClinics()
+        {
+            //for testing
+            //clients.Add(new Client("tim", "tom"));
+            //clients.Add(new Client("Jim", "tom"));
+            //clients.Add(new Client("Kevin", "tom"));
+            //clients.Add(new Client("Beuler", "tom"));
+            //clients.Add(new Client("Gina", "tom"));
+            
+            //read clients from database
+            clients = dbCommands.SelectAllClients();
+            clients.ForEach(c => cbxClients.Items.Add(string.Format("{0} - {1}", c.Code, c.Name)));
+            grdFoundclients.ItemsSource = clients;
+        }
+        
+        private void btnExit_Click(object sender, RoutedEventArgs e)
+        {
+            _Monitor.Abort(); 
+            foreach (Zebra.Sdk.Comm.ConnectionA Printer in _PrinterConnections) Printer.Close();
+            Application.Current.Shutdown();
+        }
+
+        private void TextBox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            TextBox tmpBox = sender as TextBox;
+            int txtNumber;
+            if (!int.TryParse(tmpBox.Text, out txtNumber))
+            {
+                MessageBox.Show("Value must be an integer!");
+            }
+        }
+
+        
+        private void btnPrint_Click(object sender, RoutedEventArgs e)
+        {
+            int iNumLabels = int.Parse(txtNumLabels.Text.Trim());
+            //get iStartNum from api
+            int iStartNum = int.Parse(txtStartNum.Text.Trim());
+            //iStartNum = APIAccessor.GetLastBarcode();
+
+            //TODO: see if the customer exists
+            //if (APIAccessor.CustomerAccessor.CustomerExists(SelectedClient.Code.Substring(1)))
+            //    iStartNum = (await APIAccessor.BarcodeAccessor.GetLastBarcodeAsync(_)).LastNum;
+            //else//get start number
+
+            //    var _ = Int32.Parse(SelectedClient.Code.Substring(1));
+            //if customer doesn't exist, ask for a start number, and send to db
+            //otherwise get the last num from db
+
+            int iCustNum = int.Parse((cbxClients.SelectedItem as Client).Code.Substring(1));
+
+            foreach (Zebra.Sdk.Comm.ConnectionA Printer in _PrinterConnections)
+            {
+                PrintJob p = new PrintJob(Printer, settings);
+                if (p.PrintMainLabel(iCustNum, out string test))//printed labels
+                    txbStatus.Text = "Main Label Printed"; txbStatus.Refresh();
+
+                
+                int numLabels = Convert.ToInt32(txtNumLabels.Text);
+                for(var i = 0; i < numLabels; i++)
+                {
+                    int barcode = iStartNum + i;
+                    if (p.PrintIndividualLabels(iCustNum, barcode, (bool)ckCut.IsChecked, out string error))
+                    {
+                        txbStatus.Text = "Printing Label: " + barcode.ToString(); 
+                        txbStatus.Refresh();
+                    }
+                    else
+                    {
+                        MessageBox.Show(error);
+                        break;
+                    }
+                }
+            }
+        }
+
         private void rdoPrinter_Checked(object sender, RoutedEventArgs e)
         {
             txtStatus.Text = "";
@@ -554,7 +388,7 @@ namespace BarcodePrinter
             }
             foreach (Zebra.Sdk.Comm.ConnectionA printer in _PrinterConnections)
             {
-                Printer p = new Printer(printer, settings);
+                PrintJob p = new PrintJob(printer, settings);
 
                 p.PrintTestLabel(out string error);
                 if (!string.IsNullOrEmpty(error)) MessageBox.Show("Problem printing to " + printer.SimpleConnectionName + " : " + error);

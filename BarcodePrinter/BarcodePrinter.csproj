@@ -87,7 +87,7 @@
   <ItemGroup>
     <Reference Include="API_Lib, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>bin\Debug\API_Lib.dll</HintPath>
+      <HintPath>..\..\DatabaseAPI\API_Lib\bin\Debug\net472\API_Lib.dll</HintPath>
     </Reference>
     <Reference Include="Csv, Version=1.0.31.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Csv.1.0.31\lib\net40\Csv.dll</HintPath>
@@ -178,7 +178,7 @@
     <Compile Include="APIAccessor.cs" />
     <Compile Include="Client.cs" />
     <Compile Include="LabelSettings.cs" />
-    <Compile Include="Printer.cs" />
+    <Compile Include="PrintJob.cs" />
     <Compile Include="Queries.cs" />
     <Compile Include="Repository.cs" />
     <Page Include="MainWindow.xaml">

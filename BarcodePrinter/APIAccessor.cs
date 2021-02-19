@@ -7,20 +7,35 @@ using System.Net.Http;
 using API_Lib.Models;
 using API_Lib.Routes;
 using Newtonsoft.Json;
+using API_Lib.Models.ProcedureModels.InputModels;
+using API_Lib.Models.ProcedureModels.OutputModels;
+using System.Net.Http.Headers;
 
 namespace BarcodePrinter
 {
-    public static class APIAccessor
+    public class APIAccessor
     {
         private static HttpClientHandler handler = new HttpClientHandler() { UseDefaultCredentials = true };
-        private static HttpClient client = new HttpClient(handler);
-
-        public static async Task<T> Get<T>(string url)
+        private static HttpClient client = new HttpClient(handler, false);
+        private static bool _auth = false;
+        
+        public static void SetAuth(string username, string pass)
         {
+            string creds = Convert.ToBase64String(ASCIIEncoding.ASCII.GetBytes(username + ":" + pass));
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Authentication", "Basic " + creds);
+            _auth = true;
+        }
+
+        #region baseRequests
+        private static async Task<T> Get<T>(string url)
+        {
+               
             try
             {
+                if (!_auth) throw new Exception("Must supply credentials");
+
                 var res = await client.GetStringAsync(url);
-                return JsonConvert.DeserializeObject<T>(res);
+                return JsonConvert.DeserializeObject<T>(res);   
             }
             catch (Exception e)
             {
@@ -32,6 +47,7 @@ namespace BarcodePrinter
                 {
                     throw e;
                 }
+
             }
         }
 
@@ -42,53 +58,69 @@ namespace BarcodePrinter
                 var res = await client.GetStringAsync(url + id.ToString());
                 return JsonConvert.DeserializeObject<T>(res);
             }
-            catch
+            catch (Exception e)
             {
                 return default(T);
             }
         }
 
-        //private static async Task<bool> Exists<T>(string url, string id)
-        //{
-        //    using (HttpClient client = new HttpClient(handler))
-        //    {
-        //        var res = await client.GetStringAsync(url + "/" + id);
-                
-                
-        //    }
-        //}
-
-        //todo: test Post, Put, and Delete requests
-        private static async Task<bool> Post<T>(string url, T data)
-        {
-            using (HttpClient client = new HttpClient(handler))
-            {
-                var jsonData = JsonConvert.SerializeObject(data);
-                var res = await client.PostAsync(url, new StringContent(jsonData, Encoding.UTF8, "application/json"));
-                return res.IsSuccessStatusCode;
-            }
-        }
-
         private static async Task<bool> Put<T>(string url, T data)
         {
-            using (HttpClient client = new HttpClient(handler))
-            {
-                var jsonData = JsonConvert.SerializeObject(data);
-                var res = await client.PutAsync(url, new StringContent(jsonData, Encoding.UTF8, "application/json"));
-                return res.IsSuccessStatusCode;
-            }
+            var jsonData = JsonConvert.SerializeObject(data);
+            var res = await client.PutAsync(url, new StringContent(jsonData, Encoding.UTF8, "application/json"));
+            return res.IsSuccessStatusCode;
         }
 
+        private static async Task<bool> Post<T>(string url, T data)
+        {
+            var jsonData = JsonConvert.SerializeObject(data);
+            var res = await client.PostAsync(url, new StringContent(jsonData, Encoding.UTF8, "application/json"));
+            return res.IsSuccessStatusCode;
+        }
+
+        private static async Task<object> Post<T, U>(string url, T data)
+        {
+            var jsonData = JsonConvert.SerializeObject(data);
+            var res = await client.PostAsync(url, new StringContent(jsonData, Encoding.UTF8, "application/json"));
+            var res2 = await res.Content.ReadAsStringAsync();
+            if (typeof(U) == typeof(int))
+                return int.Parse(res2);
+           
+            return JsonConvert.DeserializeObject<U>(res2);
+            
+        }
+        //todo: test Delete requests
         private static async Task<bool> Delete(string url)
         {
-            using (HttpClient client = new HttpClient(handler))
+            var res = await client.DeleteAsync(url);
+            return res.IsSuccessStatusCode;
+        }
+        
+        #endregion
+
+        public class LabelAccessor
+        {
+            private static string url = API_Lib.Routes.AllRoutes.LabelRoutes.FullURL;
+            
+            public static async Task<List<Label>> GetAllLabelsAsync()
             {
-                var res = await client.DeleteAsync(url);
-                return res.IsSuccessStatusCode;
+                return await Get<List<Label>>(url + AllRoutes.All);
+            }
+
+            public static async Task<Label> GetLabelAsync(int id)
+            {
+                return await Get<Label>(url, id);
+            }
+
+            public static async Task<string> GetPrintLabelAsync(int id, bool print = false)
+            {
+                return await Get<string>(url + "print" + id + Queries.Print + print.ToString());
+            }
+            public static async Task<CreateLabelOutput> PostCreateLabel(CreateLabelInput input)
+            {
+                return await Post<CreateLabelInput, CreateLabelOutput>(url + "create", input) as CreateLabelOutput;
             }
         }
-        //todo: add post request
-        //todo: add put request
 
         public static class BarcodeAccessor
         {
@@ -107,6 +139,11 @@ namespace BarcodePrinter
             {
                 return await Get<Barcode>(url, barcodeID);
             }
+
+            public static async Task<int> GetLastNum(int customerID)
+            {
+                return await Get<int>(url + "lastnum" + customerID.ToString());
+            }
         }
 
         public static class CustomerAccessor
@@ -122,10 +159,10 @@ namespace BarcodePrinter
                 return await Get<List<Customer>>(url + AllRoutes.All);
             }
 
-            //public static async Task<bool> CustomerExists(string num)
-            //{
-            //    return await Exists<Customer>(num);
-            //}
+            public static async Task<bool> GetCustomerExistsAsync(int id)
+            {
+                return await Get<bool>(url + id + AllRoutes.Exists);
+            }
         }
 
         public static class EquipmentAccessor
@@ -142,6 +179,7 @@ namespace BarcodePrinter
                 return await Get<List<Equipment>>(url + AllRoutes.All);
             }
         }
+
         public static class OrderAccessor
         {
             private static string url = AllRoutes.OrdersRoutes.FullURL;
@@ -154,7 +192,12 @@ namespace BarcodePrinter
             {
                 return await Get<List<Order>>(url + AllRoutes.All);
             }
-            
+
+            public static async Task<CreateOrderOutputParams> PostCreateOrder(CreateOrderInputParams parms)
+            {
+                return await Post<CreateOrderInputParams, CreateOrderOutputParams>(url + AllRoutes.Add, parms) as CreateOrderOutputParams;
+            }
+                 
             //todo: add post request
             //todo: add put request
         }
@@ -199,17 +242,31 @@ namespace BarcodePrinter
         {
             private static string url = AllRoutes.PrintersRoutes.FullURL;
 
-            public static async Task<Printers>GetPrinterAsync(byte printerId)
+            public static async Task<Printer>GetPrinterAsync(byte printerId)
             {
-                return await Get<Printers>(url, printerId);
+                return await Get<Printer>(url, printerId);
             }
 
-            public static async Task<List<Printers>> GetAllPrintersAsync()
+            public static async Task<List<Printer>> GetAllPrintersAsync()
             {
-                return await Get<List<Printers>>(url + AllRoutes.All);
+                return await Get<List<Printer>>(url + AllRoutes.All);
             }
-            //todo: add post request
-            //todo: add put request
+
+            public static async Task<bool> GetPrinterSetStatus(int id, bool inUse)
+            {
+                var res = await Get<Printer>(url + id + AllRoutes.PrintersRoutes.Procedures.Status + Queries.InUse + inUse);
+                return res.InUse == inUse;
+            }
+
+            public static async Task<bool> PutPrinterAsync(Printer p)
+            {
+                return await Put(url + p.PrinterID, p);
+            }
+
+            //public static async Task<> PostPrintLabel(PrintLabelInput input)
+            //{
+            //    return ()
+            //}
         }
 
         public static class ReagentAccessor
@@ -386,6 +443,11 @@ namespace BarcodePrinter
             public static async Task<List<User>> GetAllUsersAsync()
             {
                 return await Get<List<User>>(url + AllRoutes.All);
+            }
+
+            public static async Task<int> PostCreateUser(User user)
+            {
+                return (int)await Post<User, int>(url, user);
             }
            
             //todo: add post request
