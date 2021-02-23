@@ -54,7 +54,7 @@ namespace BarcodePrinter
             settings = new PrinterSettings(false);
             //read in customers and add to combobox
             
-            //dbCommands = new Repository();
+            dbCommands = new Repository();
 
             //GetClinics();//doesn't work from NIAR
             test();
@@ -62,24 +62,11 @@ namespace BarcodePrinter
 
         private async void test()
         {
-            APIAccessor.SetAuth("mdrummond", "pass");
+            //APIAccessor.SetAuth("b333m43", "pass");
             var labels = await APIAccessor.LabelAccessor.GetAllLabelsAsync();
-            API_Lib.Models.ProcedureModels.OutputModels.CreateLabelOutput c;
 
 
-            if (labels.Count == 0)
-            {
-                c = await APIAccessor.LabelAccessor.PostCreateLabel(new API_Lib.Models.ProcedureModels.InputModels.CreateLabelInput("1235", "Jeff", 18, 3));
-            }
-               
-            try
-            {
-                var b = await APIAccessor.LabelAccessor.GetPrintLabelAsync(18);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
+            
         }
 
         #region printer connections
@@ -196,7 +183,7 @@ namespace BarcodePrinter
         }
 
         
-        private void btnPrint_Click(object sender, RoutedEventArgs e)
+        private async void btnPrint_Click(object sender, RoutedEventArgs e)
         {
             int iNumLabels = int.Parse(txtNumLabels.Text.Trim());
             //get iStartNum from api
@@ -204,15 +191,15 @@ namespace BarcodePrinter
             //iStartNum = APIAccessor.GetLastBarcode();
 
             //TODO: see if the customer exists
-            //if (APIAccessor.CustomerAccessor.CustomerExists(SelectedClient.Code.Substring(1)))
-            //    iStartNum = (await APIAccessor.BarcodeAccessor.GetLastBarcodeAsync(_)).LastNum;
+            int iCustNum = int.Parse((cbxClients.SelectedItem as Client).Code.Substring(1));
+            //if (await APIAccessor.CustomerAccessor.GetCustomerExistsAsync(SelectedClient.Code.Substring(1)))
+            //    iStartNum = (await APIAccessor.BarcodeAccessor.GetLastBarcodeAsync(SelectedClient.Code)).LastNum;
             //else//get start number
 
-            //    var _ = Int32.Parse(SelectedClient.Code.Substring(1));
-            //if customer doesn't exist, ask for a start number, and send to db
-            //otherwise get the last num from db
+            //    //    var _ = Int32.Parse(SelectedClient.Code.Substring(1));
+            //    //if customer doesn't exist, ask for a start number, and send to db
+            //    //otherwise get the last num from db
 
-            int iCustNum = int.Parse((cbxClients.SelectedItem as Client).Code.Substring(1));
 
             foreach (Zebra.Sdk.Comm.ConnectionA Printer in _PrinterConnections)
             {
