@@ -22,7 +22,7 @@ namespace BarcodePrinter
         public static void SetAuth(string username, string pass)
         {
             string creds = Convert.ToBase64String(ASCIIEncoding.ASCII.GetBytes(username + ":" + pass));
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Authentication", "Basic " + creds);
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", creds);
             _auth = true;
         }
 
@@ -32,7 +32,7 @@ namespace BarcodePrinter
                
             try
             {
-                if (!_auth) throw new Exception("Must supply credentials");
+                //if (!_auth) throw new Exception("Must supply credentials");
 
                 var res = await client.GetStringAsync(url);
                 return JsonConvert.DeserializeObject<T>(res);   
@@ -112,7 +112,7 @@ namespace BarcodePrinter
                 return await Get<Label>(url, id);
             }
 
-            public static async Task<string> GetPrintLabelAsync(int id, bool print = false)
+            public static async Task<string> GetPrintLabelAsync(string id, bool print = false)
             {
                 return await Get<string>(url + "print" + id + Queries.Print + print.ToString());
             }
@@ -159,7 +159,7 @@ namespace BarcodePrinter
                 return await Get<List<Customer>>(url + AllRoutes.All);
             }
 
-            public static async Task<bool> GetCustomerExistsAsync(int id)
+            public static async Task<bool> GetCustomerExistsAsync(string id)
             {
                 return await Get<bool>(url + id + AllRoutes.Exists);
             }
@@ -179,6 +179,7 @@ namespace BarcodePrinter
                 return await Get<List<Equipment>>(url + AllRoutes.All);
             }
         }
+        //this needs updating when we add the orders controller
 
         //public static class OrderAccessor
         //{
