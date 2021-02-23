@@ -180,27 +180,27 @@ namespace BarcodePrinter
             }
         }
 
-        public static class OrderAccessor
-        {
-            private static string url = AllRoutes.OrdersRoutes.FullURL;
-            public static async Task<Order> GetOrderAsync(int orderID)
-            {
-                return await Get<Order>(url, orderID);
-            }
+        //public static class OrderAccessor
+        //{
+        //    private static string url = AllRoutes.OrdersRoutes.FullURL;
+        //    public static async Task<Order> GetOrderAsync(int orderID)
+        //    {
+        //        return await Get<Order>(url, orderID);
+        //    }
 
-            public static async Task<List<Order>> GetAllOrdersAsync()
-            {
-                return await Get<List<Order>>(url + AllRoutes.All);
-            }
+        //    public static async Task<List<Order>> GetAllOrdersAsync()
+        //    {
+        //        return await Get<List<Order>>(url + AllRoutes.All);
+        //    }
 
-            public static async Task<CreateOrderOutputParams> PostCreateOrder(CreateOrderInputParams parms)
-            {
-                return await Post<CreateOrderInputParams, CreateOrderOutputParams>(url + AllRoutes.Add, parms) as CreateOrderOutputParams;
-            }
+        //    public static async Task<CreateOrderOutputParams> PostCreateOrder(CreateOrderInputParams parms)
+        //    {
+        //        return await Post<CreateOrderInputParams, CreateOrderOutputParams>(url + AllRoutes.Add, parms) as CreateOrderOutputParams;
+        //    }
                  
-            //todo: add post request
-            //todo: add put request
-        }
+        //    //todo: add post request
+        //    //todo: add put request
+        //}
 
         public static class OrderDetailsAccessor
         {

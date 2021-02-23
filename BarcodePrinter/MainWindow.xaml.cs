@@ -52,20 +52,20 @@ namespace BarcodePrinter
             _Monitor = new System.Threading.Thread(new System.Threading.ThreadStart(Monitor_Thread));
             Title += " Version: " +  _Version;
             settings = new PrinterSettings(false);
-            //read in customers and add to combobox
             
             //dbCommands = new Repository();
 
+            //read in customers and add to combobox
             //GetClinics();//doesn't work from NIAR
             test();
         }
 
         private async void test()
         {
-            APIAccessor.SetAuth("mdrummond", "pass");
+            APIAccessor.SetAuth("b333m439", "pass");
+            var barcodes = await APIAccessor.BarcodeAccessor.GetAllBarcodesAsync();
             var labels = await APIAccessor.LabelAccessor.GetAllLabelsAsync();
             API_Lib.Models.ProcedureModels.OutputModels.CreateLabelOutput c;
-
 
             if (labels.Count == 0)
             {
