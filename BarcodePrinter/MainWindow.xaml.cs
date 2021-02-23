@@ -9,7 +9,9 @@
 // 0.9 - 2/4/2021 - Matthew Drummond
 //      adding database integration
 
+using API_Lib.Models;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -17,9 +19,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
-using API_Lib.Routes;
-using API_Lib.Models;
-using API_Lib.Models.ProcedureModels;
 
 namespace BarcodePrinter
 {
@@ -40,9 +39,10 @@ namespace BarcodePrinter
         Client SelectedClient;
         Repository dbCommands;
         bool BothPeelsPrinting;
-        
+
         //private Timer _StatusTimer;
         #endregion
+
 
         public MainWindow()
         {
@@ -52,34 +52,26 @@ namespace BarcodePrinter
             _Monitor = new System.Threading.Thread(new System.Threading.ThreadStart(Monitor_Thread));
             Title += " Version: " +  _Version;
             settings = new PrinterSettings(false);
-            
-            //dbCommands = new Repository();
+
+            dbCommands = new Repository();
 
             //read in customers and add to combobox
-            //GetClinics();//doesn't work from NIAR
+            try
+            {
+                GetClinics();//doesn't work from NIAR
+            }
+            catch
+            {
+                MessageBox.Show("Problem getting Clinics");
+            }
+
             test();
         }
 
         private async void test()
         {
-            APIAccessor.SetAuth("b333m439", "pass");
-            var barcodes = await APIAccessor.BarcodeAccessor.GetAllBarcodesAsync();
-            var labels = await APIAccessor.LabelAccessor.GetAllLabelsAsync();
-            API_Lib.Models.ProcedureModels.OutputModels.CreateLabelOutput c;
-
-            if (labels.Count == 0)
-            {
-                c = await APIAccessor.LabelAccessor.PostCreateLabel(new API_Lib.Models.ProcedureModels.InputModels.CreateLabelInput("1235", "Jeff", 18, 3));
-            }
-               
-            try
-            {
-                var b = await APIAccessor.LabelAccessor.GetPrintLabelAsync(18);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
+            APIAccessor.SetAuth(Environment.UserName, "pass");
+            var l = await APIAccessor.LabelAccessor.GetAllLabelsAsync();
         }
 
         #region printer connections
@@ -196,38 +188,66 @@ namespace BarcodePrinter
         }
 
         
-        private void btnPrint_Click(object sender, RoutedEventArgs e)
+        private async void btnPrint_Click(object sender, RoutedEventArgs e)
         {
             int iNumLabels = int.Parse(txtNumLabels.Text.Trim());
             //get iStartNum from api
-            int iStartNum = int.Parse(txtStartNum.Text.Trim());
-            //iStartNum = APIAccessor.GetLastBarcode();
+            List<Customer> customers = await APIAccessor.CustomerAccessor.GetAllCustomersAsync();
+            Customer selected = null;
+            int iStartNum = 0;
+            foreach (Customer c in customers)//look for customer
+            {
+                if (c.CustomerNumber == SelectedClient.Code.Substring(1))
+                {
+                    selected = c;
+                    break;  
+                }
+            }
 
-            //TODO: see if the customer exists
-            //if (APIAccessor.CustomerAccessor.CustomerExists(SelectedClient.Code.Substring(1)))
-            //    iStartNum = (await APIAccessor.BarcodeAccessor.GetLastBarcodeAsync(_)).LastNum;
-            //else//get start number
-
-            //    var _ = Int32.Parse(SelectedClient.Code.Substring(1));
-            //if customer doesn't exist, ask for a start number, and send to db
-            //otherwise get the last num from db
+            if (selected == null)//didn't find it
+            {
+                //TODO: prompt for start num
+            }
+            else           
+                iStartNum = await APIAccessor.BarcodeAccessor.GetLastNum(selected.CustomerID);
 
             int iCustNum = int.Parse((cbxClients.SelectedItem as Client).Code.Substring(1));
+            
+            //TODO: using more than 1 printer
+            //int numPrinters = 1;
+            //use a queue of jobs and queue of barcodes?
+            //List<PrintJob> jobs = new List<PrintJob>();
 
+            Queue<PrintJob> jobs = new Queue<PrintJob>();
             foreach (Zebra.Sdk.Comm.ConnectionA Printer in _PrinterConnections)
             {
-                PrintJob p = new PrintJob(Printer, settings);
-                if (p.PrintMainLabel(iCustNum, out string test))//printed labels
-                    txbStatus.Text = "Main Label Printed"; txbStatus.Refresh();
+                jobs.Enqueue(new PrintJob(Printer, settings));
+                //jobs.Add(new PrintJob(Printer, settings));
+            }
+            
+            Queue<int> barcodes = new Queue<int>();
+            for(int i = 0; i < iNumLabels; i++)
+            {
+                barcodes.Enqueue(iStartNum + i);
+            }
 
-                
+            if (jobs.Peek().PrintMainLabel(iCustNum, out string test))
+            {
+                txbStatus.Text = "Main Label Printed"; txbStatus.Refresh();
+            }
+
+            //TODO: queues need testing
+            while (barcodes.Count > 0)
+            {
                 int numLabels = Convert.ToInt32(txtNumLabels.Text);
-                for(var i = 0; i < numLabels; i++)
+                var p = jobs.Dequeue();
+                for (int i = 0; i < numLabels; i+= jobs.Count)
                 {
-                    int barcode = iStartNum + i;
+                    int barcode = barcodes.Dequeue();
+
                     if (p.PrintIndividualLabels(iCustNum, barcode, (bool)ckCut.IsChecked, out string error))
                     {
-                        txbStatus.Text = "Printing Label: " + barcode.ToString(); 
+                        txbStatus.Text = "Printing Label: " + barcode.ToString();
                         txbStatus.Refresh();
                     }
                     else
@@ -236,6 +256,7 @@ namespace BarcodePrinter
                         break;
                     }
                 }
+                jobs.Enqueue(p);
             }
         }
 
@@ -256,7 +277,6 @@ namespace BarcodePrinter
             
             btnPrint.IsEnabled = _PrinterConnections.Count > 0;
             btnCancel.IsEnabled = btnPrint.IsEnabled;
-            //_Monitor.Start(); 
         }
 
         private void btnCancel_Click(object sender, RoutedEventArgs e)
@@ -371,7 +391,8 @@ namespace BarcodePrinter
 
         private void cbxClients_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            SelectedClient = clients[cbxClients.SelectedIndex];
+            Client sel = clients[cbxClients.SelectedIndex];
+            
         }
 
         private void grdFoundclients_SelectedCellsChanged(object sender, SelectedCellsChangedEventArgs e)
