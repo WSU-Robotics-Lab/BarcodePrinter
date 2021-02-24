@@ -29,17 +29,23 @@ namespace BarcodePrinter
     {
         private string _Version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString(2);
 
+        enum PrinterUsed
+        {
+            p610,
+            p220,
+            pUSB
+        }
+
         #region fields
         private List<Zebra.Sdk.Comm.ConnectionA> _PrinterConnections;
         private System.Threading.Thread _Monitor;
 
         private PrinterSettings settings;
-        int selectedPrinter = -1;
+        PrinterUsed selectedPrinter;
         List<Client> clients;
         Client SelectedClient;
         Repository dbCommands;
-        bool BothPeelsPrinting;
-
+        
         //private Timer _StatusTimer;
         #endregion
 
@@ -151,6 +157,7 @@ namespace BarcodePrinter
             
             attempt610Connection();
             attempt220Connection();
+            //attemptUSBConnection();
         }
 
         #endregion
@@ -180,21 +187,36 @@ namespace BarcodePrinter
         private void TextBox_LostFocus(object sender, RoutedEventArgs e)
         {
             TextBox tmpBox = sender as TextBox;
-            int txtNumber;
-            if (!int.TryParse(tmpBox.Text, out txtNumber))
+            
+            if (!int.TryParse(tmpBox.Text, out int txtNumber))
             {
                 MessageBox.Show("Value must be an integer!");
             }
         }
 
-        
         private async void btnPrint_Click(object sender, RoutedEventArgs e)
         {
-            int iNumLabels = int.Parse(txtNumLabels.Text.Trim());
+            if (!int.TryParse(txtNumLabels.Text.Trim(), out int iNumLabels))
+            {
+                MessageBox.Show("Label Quantity must be a number");
+                return;
+            }
+
+            int iCustNum = -1;
+            if (SelectedClient == null)
+            {
+                MessageBox.Show("Must select a Client");
+                return;
+            }
+            else
+            {
+                iCustNum = int.Parse(SelectedClient.Code.Substring(1));
+            }   
+
             //get iStartNum from api
             List<Customer> customers = await APIAccessor.CustomerAccessor.GetAllCustomersAsync();
             Customer selected = null;
-            int iStartNum = 0;
+            int iStartNum = -1;
             foreach (Customer c in customers)//look for customer
             {
                 if (c.CustomerNumber == SelectedClient.Code.Substring(1))
@@ -208,54 +230,63 @@ namespace BarcodePrinter
             {
                 //TODO: prompt for start num
             }
-            else           
-                iStartNum = await APIAccessor.BarcodeAccessor.GetLastNum(selected.CustomerID);
-
-            int iCustNum = int.Parse((cbxClients.SelectedItem as Client).Code.Substring(1));
-            
-            //TODO: using more than 1 printer
-            //int numPrinters = 1;
-            //use a queue of jobs and queue of barcodes?
-            //List<PrintJob> jobs = new List<PrintJob>();
-
-            Queue<PrintJob> jobs = new Queue<PrintJob>();
-            foreach (Zebra.Sdk.Comm.ConnectionA Printer in _PrinterConnections)
+            else
             {
-                jobs.Enqueue(new PrintJob(Printer, settings));
-                //jobs.Add(new PrintJob(Printer, settings));
+                iStartNum = await APIAccessor.BarcodeAccessor.GetLastNum(selected.CustomerID);
+            }
+
+            //TODO: using more than 1 printer
+            if (selectedPrinter == PrinterUsed.p220)
+            {
+                
             }
             
-            Queue<int> barcodes = new Queue<int>();
+            Queue<PrintJob> jobs = new Queue<PrintJob>();
+            //foreach (Zebra.Sdk.Comm.ConnectionA Printer in _PrinterConnections)
+            //{
+            //    jobs.Enqueue(new PrintJob(Printer, settings));
+            //}
+
+
+            //TODO: remove after testing
+            jobs.Enqueue(new PrintJob(_PrinterConnections[0], settings));
+            jobs.Enqueue(new PrintJob(_PrinterConnections[0], settings));
+            //TODO: remove after testing
+
+
+            iStartNum = 14;
+            Queue<string> barcodes = new Queue<string>();
+            await APIAccessor.LabelAccessor.PostCreateLabel(new API_Lib.Models.ProcedureModels.InputModels.CreateLabelInput(selected.CustomerNumber, SelectedClient.Name, iStartNum, iNumLabels));
+            
             for(int i = 0; i < iNumLabels; i++)
             {
-                barcodes.Enqueue(iStartNum + i);
+                barcodes.Enqueue(await APIAccessor.LabelAccessor.GetPrintLabelAsync(selected.CustomerID.ToString()));
             }
 
             if (jobs.Peek().PrintMainLabel(iCustNum, out string test))
             {
                 txbStatus.Text = "Main Label Printed"; txbStatus.Refresh();
             }
-
+            
             //TODO: queues need testing
             while (barcodes.Count > 0)
             {
-                int numLabels = Convert.ToInt32(txtNumLabels.Text);
                 var p = jobs.Dequeue();
-                for (int i = 0; i < numLabels; i+= jobs.Count)
-                {
-                    int barcode = barcodes.Dequeue();
+                string barcode = barcodes.Dequeue();
 
-                    if (p.PrintIndividualLabels(iCustNum, barcode, (bool)ckCut.IsChecked, out string error))
-                    {
-                        txbStatus.Text = "Printing Label: " + barcode.ToString();
-                        txbStatus.Refresh();
-                    }
-                    else
-                    {
-                        MessageBox.Show(error);
-                        break;
-                    }
+                if (p.PrintIndividualLabels(iCustNum, barcode, (bool)ckCut.IsChecked, out string error))
+                {
+                    txbStatus.Text = "Printing Label: " + barcode.ToString();
+                    txbStatus.Refresh();
                 }
+                else
+                {
+                    MessageBox.Show(error);
+                    break;
+                }
+
+                
+
                 jobs.Enqueue(p);
             }
         }
@@ -263,20 +294,57 @@ namespace BarcodePrinter
         private void rdoPrinter_Checked(object sender, RoutedEventArgs e)
         {
             txtStatus.Text = "";
+            _PrinterConnections.Clear();
             if (rdo610.IsChecked.HasValue && rdo610.IsChecked.Equals(true))
+            {
                 attempt610Connection();
+                if (_PrinterConnections.Count > 0)
+                {
+                    selectedPrinter = PrinterUsed.p610;
+                }
+            }
             else if (rdo220.IsChecked.HasValue && rdo220.IsChecked.Equals(true))
+            {
                 attempt220Connection();
+                if (_PrinterConnections.Count > 0)
+                {
+                    selectedPrinter = PrinterUsed.p220;
+                }
+            }
             //removing USB printers for now
             //else if (rdoUSB.IsChecked.HasValue && rdoUSB.IsChecked.Equals(true))
             //{
-            //       attemptUSBConnection();
+            //  attemptUSBConnection();
+                //if (_PrinterConnections.Count > 0)
+                //{
+                //    selectedPrinter = PrinterUsed.pUSB;
+                //}
+               
+            
             //}
 
             txtStatus.Text = "Number Connected: " + _PrinterConnections.Count.ToString();
             
             btnPrint.IsEnabled = _PrinterConnections.Count > 0;
             btnCancel.IsEnabled = btnPrint.IsEnabled;
+        }
+
+        private void UxSettings_LostFocus(object sender, RoutedEventArgs e)
+        {
+            TextBox txb = sender as TextBox;
+            int res;
+            if (!Int32.TryParse(txb.Text, out res))
+            {
+                MessageBox.Show("Value must be an integer"); 
+                return;
+            }
+
+            if (txb.Name.ToUpper().Contains("LEFT"))
+                settings.IndividualLeft = res;
+            else if (txb.Name.ToUpper().Contains("TOP"))
+                settings.IndividualTop = res;
+            else
+                settings.IndividualDarkness = res;
         }
 
         private void btnCancel_Click(object sender, RoutedEventArgs e)
@@ -318,27 +386,9 @@ namespace BarcodePrinter
             }
         }
 
-        private void UxSettings_LostFocus(object sender, RoutedEventArgs e)
-        {
-            TextBox txb = sender as TextBox;
-            int res;
-            if (!Int32.TryParse(txb.Text, out res))
-            {
-                MessageBox.Show("Value must be an integer"); 
-                return;
-            }
-
-            if (txb.Name.ToUpper().Contains("LEFT"))
-                settings.IndividualLeft = res;
-            else if (txb.Name.ToUpper().Contains("TOP"))
-                settings.IndividualTop = res;
-            else
-                settings.IndividualDarkness = res;
-        }
-
         private void btnSettings_Click(object sender, RoutedEventArgs e)
         {
-            popSettings.IsOpen = true;
+            popSettings.IsOpen = !popSettings.IsOpen;//toggle
         }
 
         private void popClose_Click(object sender, RoutedEventArgs e)
@@ -376,7 +426,7 @@ namespace BarcodePrinter
 
         private void PeelPrinter_Checked(object sender, RoutedEventArgs e)
         {
-            BothPeelsPrinting = (bool)ckPrinterA.IsChecked && (bool)ckPrinterB.IsChecked;
+         //   BothPeelsPrinting = (bool)ckPrinterA.IsChecked && (bool)ckPrinterB.IsChecked;
         }
 
         private void txtClientSearch_GotFocus(object sender, RoutedEventArgs e)
@@ -384,20 +434,15 @@ namespace BarcodePrinter
             txtClientSearch.Text = "";
         }
 
-        private void txtClientSearch_LostFocus(object sender, RoutedEventArgs e)
-        {
-            txtClientSearch.Text = "Customer Search...";
-        }
-
         private void cbxClients_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            Client sel = clients[cbxClients.SelectedIndex];
-            
+            SelectedClient = clients[cbxClients.SelectedIndex];
         }
 
         private void grdFoundclients_SelectedCellsChanged(object sender, SelectedCellsChangedEventArgs e)
         {
             SelectedClient = grdFoundclients.SelectedItem as Client;
+            cbxClients.SelectedIndex = clients.IndexOf(SelectedClient);
         }
 
         private void popBtnTestPrint_Click(object sender, RoutedEventArgs e)

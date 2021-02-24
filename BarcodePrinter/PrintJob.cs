@@ -212,7 +212,7 @@ namespace BarcodePrinter
             }
             
         }
-        public bool PrintIndividualLabels(int left, int top, int darkness, int iCustNum, int iStartNum, bool cut, out string error)
+        public bool PrintIndividualLabels(int left, int top, int darkness, string barcode, bool cut, out string error)
         {
             if (!labelFormatSet)
                 if (!SetIndividualLabelFormat(left, top, darkness, out error))
@@ -225,7 +225,6 @@ namespace BarcodePrinter
             
             int PrintNum = 0;
 
-            int i = 0;
             int attempts = 0;
             StringBuilder ErrorCheck = new StringBuilder();
             ErrorCheck.AppendLine("^XA");
@@ -258,9 +257,9 @@ namespace BarcodePrinter
                 }
                 if (!errValue)
                 {
-                    string sNumWDashes = String.Format("{0,0:0000}-{1,0:000-000-000}", iCustNum, iStartNum + i);
-                    string sNumOnly = String.Format("{0,0:0000}{1,0:000000000}", iCustNum, iStartNum + i);
-                    
+                    string sNumWDashes = String.Format("{0,0:0000}-{1,0:000-000-000}", barcode.Substring(0,4), barcode.Substring(4));
+                    string sNumOnly = String.Format("{0,0:0000}{1,0:000000000}", barcode.Substring(0, 4), barcode.Substring(4));
+
                     StringBuilder individualLabel = new StringBuilder();
                     individualLabel.AppendLine("^XA");
                     individualLabel.AppendLine("^XFR:LABEL.ZPL^FS");
@@ -270,32 +269,32 @@ namespace BarcodePrinter
                         individualLabel.Append("^MMC");
                     individualLabel.AppendLine("^XZ");
                     try { connection.Write(Encoding.ASCII.GetBytes(individualLabel.ToString())); return true; }
-                    catch (Exception e) { 
+                    catch (Exception e)
+                    {
                         if (attempts == 10)
                         {
-                            error = e.Message; 
-                            return false; 
+                            error = e.Message;
+                            return false;
                         }
                     }
                     PrintNum++;
-                    i++;
                 }
             }
             return false;
         }
-        public bool PrintIndividualLabels(int iCustNum, int barcode, bool cut, out string error)
+        public bool PrintIndividualLabels(string barcode, bool cut, out string error)
         {
            return PrintIndividualLabels(
                printerSettings.IndividualLeft, 
                printerSettings.IndividualTop, 
                printerSettings.IndividualDarkness, 
-               iCustNum, barcode, 
+               barcode, 
                cut, 
                out error);
         }
         public bool PrintTestLabel(out string error)
         {
-            return PrintIndividualLabels(1234, 123456789, false, out error);
+            return PrintIndividualLabels("1234123456", false, out error);
         }
     }
 }
