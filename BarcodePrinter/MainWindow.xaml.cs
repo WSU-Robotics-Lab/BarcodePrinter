@@ -446,9 +446,6 @@ namespace BarcodePrinter
         private void cbxClients_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             SelectedClient = clients[cbxClients.SelectedIndex];
-            txtClientSearch.Text = "";
-
-            grdFoundclients.SelectedItem = SelectedClient;
         }
 
         private void grdFoundclients_SelectedCellsChanged(object sender, SelectedCellsChangedEventArgs e)
