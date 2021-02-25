@@ -97,7 +97,7 @@
                     <ColumnDefinition/>
                 </Grid.ColumnDefinitions>
                 <TextBlock x:Name="txbClientSearch" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Text="Customer Search:" Margin="5,0,5,0"/>
-                <TextBox x:Name="txtClientSearch" Grid.Column="1" VerticalContentAlignment="Center" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" TextChanged="cbxSubCustomers_TextChanged" GotFocus="txtClientSearch_GotFocus" Width="90"/>
+                <TextBox x:Name="txtClientSearch" Grid.Column="1" VerticalContentAlignment="Center" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" TextChanged="cbxSubCustomers_TextChanged" Width="90"/>
             </Grid>
         </Viewbox>
         <Viewbox Grid.Row="2" Grid.Column="1" Stretch="Uniform">
@@ -121,7 +121,7 @@
                     <ColumnDefinition/>
                 </Grid.ColumnDefinitions>
                 <Canvas>
-                    <Popup x:Name="popStart" >
+                    <Popup x:Name="popStart" IsOpen="False">
                         <Grid Background="LightGray">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition/>
@@ -134,7 +134,7 @@
 
                             <TextBlock x:Name="popTxbStartNumLbl" Text="Enter Starting Number:" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
                             <TextBox x:Name="popTxtStartNum" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
-                            <Button x:Name="popBtnStartNum" Grid.Row="1" Grid.Column="1" Content="Select" HorizontalAlignment="Right" VerticalAlignment="Stretch"/>
+                            <Button x:Name="popBtnStartNum" Grid.Row="1" Grid.Column="1" Content="Select" HorizontalAlignment="Right" VerticalAlignment="Stretch" Click="popBtnStartNum_Click"/>
 
                         </Grid>
                     </Popup>

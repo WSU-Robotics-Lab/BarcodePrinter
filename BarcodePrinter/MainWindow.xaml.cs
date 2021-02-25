@@ -44,6 +44,7 @@ namespace BarcodePrinter
         PrinterUsed selectedPrinter;
         List<Client> clients;
         Client SelectedClient;
+        Customer selectedCustomer;
         Repository dbCommands;
         int iStartNum = -1;
 
@@ -168,13 +169,6 @@ namespace BarcodePrinter
 
         private void GetClinics()
         {
-            //for testing
-            //clients.Add(new Client("tim", "tom"));
-            //clients.Add(new Client("Jim", "tom"));
-            //clients.Add(new Client("Kevin", "tom"));
-            //clients.Add(new Client("Beuler", "tom"));
-            //clients.Add(new Client("Gina", "tom"));
-            
             //read clients from database
             clients = dbCommands.SelectAllClients();
             clients.ForEach(c => cbxClients.Items.Add(string.Format("{0} - {1}", c.Code, c.Name)));
@@ -200,78 +194,43 @@ namespace BarcodePrinter
 
         private async void btnPrint_Click(object sender, RoutedEventArgs e)
         {
+            if (!rdo220.IsChecked.HasValue && !rdo610.IsChecked.HasValue)
+            {
+                MessageBox.Show("Must select a printer.");
+                return;
+            }
             if (!int.TryParse(txtNumLabels.Text.Trim(), out int iNumLabels))
             {
                 MessageBox.Show("Label Quantity must be a number");
                 return;
             }
 
-            int iCustNum = -1;
-
-            //TODO: remove after debugging
-            iCustNum = 1234;
-            //TODO: remove after debugging
-
-            //if (SelectedClient == null)
-            //{
-            //    MessageBox.Show("Must select a Client");
-            //    return;
-            //}
-            //else
-            //{
-            //    iCustNum = int.Parse(SelectedClient.Code.Substring(1));
-            //}   
-
-            //get iStartNum from api
-            List<Customer> customers = await APIAccessor.CustomerAccessor.GetAllCustomersAsync();
-            Customer selected = null;
-            ;
-            foreach (Customer c in customers)//look for customer
+            int iCustNum = 0;
+            if (SelectedClient == null)
             {
-                if (c.CustomerNumber == SelectedClient.Code.Substring(1))
-                {
-                    selected = c;
-                    break;  
-                }
-            }
-
-            if (selected == null)//didn't find it
-            {
-                //TODO: prompt for start num
-                MessageBox.Show("Customer not listed in database:\n\t Supply starting barcode and the customer will be added to database.");
-
+                MessageBox.Show("Must select a Client");
+                return;
             }
             else
             {
-                iStartNum = await APIAccessor.BarcodeAccessor.GetLastNum(selected.CustomerID);
+                iCustNum = int.Parse(SelectedClient.Code.Substring(1));
             }
 
             //TODO: using more than 1 printer
-            if (selectedPrinter == PrinterUsed.p220)
-            {
-                
-            }
-            
+                        
             Queue<PrintJob> jobs = new Queue<PrintJob>();
-            //foreach (Zebra.Sdk.Comm.ConnectionA Printer in _PrinterConnections)
-            //{
-            //    jobs.Enqueue(new PrintJob(Printer, settings));
-            //}
-
-
-            //TODO: remove after testing
-            jobs.Enqueue(new PrintJob(_PrinterConnections[0], settings));
-            jobs.Enqueue(new PrintJob(_PrinterConnections[0], settings));
-            //TODO: remove after testing
-
+            foreach (Zebra.Sdk.Comm.ConnectionA Printer in _PrinterConnections)
+            {
+                jobs.Enqueue(new PrintJob(Printer, settings));
+            }
 
             iStartNum = 14;
             Queue<string> barcodes = new Queue<string>();
-            await APIAccessor.LabelAccessor.PostCreateLabel(new API_Lib.Models.ProcedureModels.InputModels.CreateLabelInput(selected.CustomerNumber, SelectedClient.Name, iStartNum, iNumLabels));
+            await APIAccessor.LabelAccessor.PostCreateLabel(new API_Lib.Models.ProcedureModels.InputModels.CreateLabelInput(selectedCustomer.CustomerNumber, SelectedClient.Name, iStartNum, iNumLabels));
             
             for(int i = 0; i < iNumLabels; i++)
             {
-                barcodes.Enqueue(await APIAccessor.LabelAccessor.GetPrintLabelAsync(selected.CustomerID.ToString()));
+                barcodes.Enqueue(await APIAccessor.LabelAccessor.GetPrintLabelAsync(selectedCustomer.CustomerID.ToString()));
             }
 
             if (jobs.Peek().PrintMainLabel(iCustNum, out string test))
@@ -418,9 +377,6 @@ namespace BarcodePrinter
 
         private void cbxSubCustomers_TextChanged(object sender, TextChangedEventArgs e)
         {
-            if ("Customer Search...".Contains(txtClientSearch.Text)) return;
-
-
             grdFoundclients.ItemsSource = null;
             grdFoundclients.Items.Clear();
             string txt = (sender as TextBox).Text.ToUpper();
@@ -438,22 +394,45 @@ namespace BarcodePrinter
          //   BothPeelsPrinting = (bool)ckPrinterA.IsChecked && (bool)ckPrinterB.IsChecked;
         }
 
-        private void txtClientSearch_GotFocus(object sender, RoutedEventArgs e)
-        {
-            txtClientSearch.Text = "";
-        }
-
-        private void cbxClients_SelectionChanged(object sender, SelectionChangedEventArgs e)
+       private void cbxClients_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             SelectedClient = clients[cbxClients.SelectedIndex];
+            SetStartNum();
         }
 
         private void grdFoundclients_SelectedCellsChanged(object sender, SelectedCellsChangedEventArgs e)
         {
             SelectedClient = grdFoundclients.SelectedItem as Client;
             cbxClients.SelectedIndex = clients.IndexOf(SelectedClient);
+            SetStartNum();
         }
 
+        private async void SetStartNum()
+        {
+            selectedCustomer = null;
+            List<Customer> customers = await APIAccessor.CustomerAccessor.GetAllCustomersAsync();
+            foreach (Customer c in customers)//look for customer
+            {
+                if (c.CustomerNumber == SelectedClient.Code.Substring(1))
+                {
+                    selectedCustomer = c;
+                    break;
+                }
+            }
+
+            if (selectedCustomer == null)//didn't find it
+            {
+                //TODO: prompt for start num
+                MessageBox.Show("Customer not listed in database:\nSupply starting barcode and the customer will be added to database.");
+                popStart.IsOpen = true;
+            }
+            else
+            {
+                iStartNum = await APIAccessor.BarcodeAccessor.GetLastNum(selectedCustomer.CustomerID);
+            }
+        }
+
+        
         private void popBtnTestPrint_Click(object sender, RoutedEventArgs e)
         {
             if (_PrinterConnections.Count == 0 || _PrinterConnections == null) 
@@ -467,6 +446,19 @@ namespace BarcodePrinter
 
                 p.PrintTestLabel(out string error);
                 if (!string.IsNullOrEmpty(error)) MessageBox.Show("Problem printing to " + printer.SimpleConnectionName + " : " + error);
+            }
+        }
+
+        private void popBtnStartNum_Click(object sender, RoutedEventArgs e)
+        {
+            if (int.TryParse(popTxtStartNum.Text, out iStartNum) && iStartNum > -1)
+            {
+                popStart.IsOpen = false;
+                btnPrint_Click(sender, e);
+            }
+            else
+            {
+                MessageBox.Show("Start num must be an integer with value 0 or more");
             }
         }
     }
