@@ -114,7 +114,7 @@ namespace BarcodePrinter
                 txtStatus.Refresh();
                 Cursor = Cursors.Wait;
                 _PrinterConnections.Add(new Zebra.Sdk.Comm.TcpConnection("lbl-cv-174h-2.dyn.wichita.edu", 9100));
-                //_PrinterConnections.LastOrDefault().Open();
+                _PrinterConnections.LastOrDefault().Open();
                 txtStatus.Text = "220 - Printer A Connected";
                 if (!(bool)ckPrinterA.IsChecked)
                 {
@@ -470,6 +470,11 @@ namespace BarcodePrinter
             {
                 MessageBox.Show("Start num must be an integer with value 0 or more");
             }
+        }
+
+        private void ckPrinter_Checked(object sender, RoutedEventArgs e)
+        {
+            rdo220.IsChecked = false;
         }
     }
 }
