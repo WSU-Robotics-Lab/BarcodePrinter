@@ -45,7 +45,8 @@ namespace BarcodePrinter
         List<Client> clients;
         Client SelectedClient;
         Repository dbCommands;
-        
+        int iStartNum = -1;
+
         //private Timer _StatusTimer;
         #endregion
 
@@ -76,7 +77,10 @@ namespace BarcodePrinter
 
         private async void test()
         {
-            APIAccessor.SetAuth(Environment.UserName, "pass");
+            //APIAccessor.SetAuth(Environment.UserName, "pass");
+            //TODO: remove after debugging
+            APIAccessor.SetAuth("b333m439", "pass");
+            //TODO: remove after debugging
             var l = await APIAccessor.LabelAccessor.GetAllLabelsAsync();
         }
 
@@ -203,20 +207,25 @@ namespace BarcodePrinter
             }
 
             int iCustNum = -1;
-            if (SelectedClient == null)
-            {
-                MessageBox.Show("Must select a Client");
-                return;
-            }
-            else
-            {
-                iCustNum = int.Parse(SelectedClient.Code.Substring(1));
-            }   
+
+            //TODO: remove after debugging
+            iCustNum = 1234;
+            //TODO: remove after debugging
+
+            //if (SelectedClient == null)
+            //{
+            //    MessageBox.Show("Must select a Client");
+            //    return;
+            //}
+            //else
+            //{
+            //    iCustNum = int.Parse(SelectedClient.Code.Substring(1));
+            //}   
 
             //get iStartNum from api
             List<Customer> customers = await APIAccessor.CustomerAccessor.GetAllCustomersAsync();
             Customer selected = null;
-            int iStartNum = -1;
+            ;
             foreach (Customer c in customers)//look for customer
             {
                 if (c.CustomerNumber == SelectedClient.Code.Substring(1))
@@ -229,6 +238,8 @@ namespace BarcodePrinter
             if (selected == null)//didn't find it
             {
                 //TODO: prompt for start num
+                MessageBox.Show("Customer not listed in database:\n\t Supply starting barcode and the customer will be added to database.");
+
             }
             else
             {
@@ -274,7 +285,7 @@ namespace BarcodePrinter
                 var p = jobs.Dequeue();
                 string barcode = barcodes.Dequeue();
 
-                if (p.PrintIndividualLabels(iCustNum, barcode, (bool)ckCut.IsChecked, out string error))
+                if (p.PrintIndividualLabels(barcode, (bool)ckCut.IsChecked, out string error))
                 {
                     txbStatus.Text = "Printing Label: " + barcode.ToString();
                     txbStatus.Refresh();
@@ -319,8 +330,6 @@ namespace BarcodePrinter
                 //{
                 //    selectedPrinter = PrinterUsed.pUSB;
                 //}
-               
-            
             //}
 
             txtStatus.Text = "Number Connected: " + _PrinterConnections.Count.ToString();
@@ -437,6 +446,9 @@ namespace BarcodePrinter
         private void cbxClients_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             SelectedClient = clients[cbxClients.SelectedIndex];
+            txtClientSearch.Text = "";
+
+            grdFoundclients.SelectedItem = SelectedClient;
         }
 
         private void grdFoundclients_SelectedCellsChanged(object sender, SelectedCellsChangedEventArgs e)

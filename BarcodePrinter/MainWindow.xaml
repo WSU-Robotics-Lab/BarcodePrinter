@@ -39,47 +39,49 @@
                 <RowDefinition/>
                 <RowDefinition/>
             </Grid.RowDefinitions>
-                
-                <Popup x:Name="popSettings" IsOpen="False" Height="246" Width="150" Grid.Row="2">
-                    <Viewbox Stretch="Uniform">
-                        <Grid VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Background="LightGray" >
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="auto"/>
-                                <RowDefinition/>
-                                <RowDefinition Height="auto"/>
-                                <RowDefinition/>
-                                <RowDefinition Height="auto"/>
-                                <RowDefinition/>
-                                <RowDefinition/>
-                            </Grid.RowDefinitions>
-                            <Label x:Name="popLeftLbl" Content="Left Offset:" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
-                            <TextBox x:Name="popLeft" Text="Enter Offset..." LostFocus="UxSettings_LostFocus" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="1" GotFocus="UxSettings_GotFocus"/>
-                            <Button x:Name="popClose" HorizontalAlignment="Right" VerticalAlignment="Top" Click="popClose_Click">
-                                <Image Source="/Assets/popupClose.png" Height="12"/>
-                            </Button>
-                            <Label x:Name="popTopLbl" Content="Top Offset:" Grid.Row="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
-                            <TextBox x:Name="popTop" Text="Enter Offset..." Grid.Row="3" LostFocus="UxSettings_LostFocus" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" GotFocus="UxSettings_GotFocus"/>
-                            <Label x:Name="popDarknessLbl" Content="Darkness:" Grid.Row="4" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
-                            <TextBox x:Name="popDarkness" Text="Enter Darkness..." Grid.Row="5" LostFocus="UxSettings_LostFocus" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" GotFocus="UxSettings_GotFocus"/>
-                            <Button x:Name="popBtnTestPrint" Content="Print Test Label" Grid.Row="6" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Click="popBtnTestPrint_Click"/>
-                        </Grid>
-                    </Viewbox>
-                </Popup>
+
+                <Canvas>
+                    <Popup x:Name="popSettings" IsOpen="False" Height="246" Width="150" Grid.Row="2">
+                        <Viewbox Stretch="Uniform">
+                            <Grid VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Background="LightGray" >
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="auto"/>
+                                    <RowDefinition/>
+                                    <RowDefinition Height="auto"/>
+                                    <RowDefinition/>
+                                    <RowDefinition Height="auto"/>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                </Grid.RowDefinitions>
+                                <Label x:Name="popLeftLbl" Content="Left Offset:" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                                <TextBox x:Name="popLeft" Text="Enter Offset..." LostFocus="UxSettings_LostFocus" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="1" GotFocus="UxSettings_GotFocus"/>
+                                <Button x:Name="popClose" HorizontalAlignment="Right" VerticalAlignment="Top" Click="popClose_Click">
+                                    <Image Source="/Assets/popupClose.png" Height="12"/>
+                                </Button>
+                                <Label x:Name="popTopLbl" Content="Top Offset:" Grid.Row="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                                <TextBox x:Name="popTop" Text="Enter Offset..." Grid.Row="3" LostFocus="UxSettings_LostFocus" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" GotFocus="UxSettings_GotFocus"/>
+                                <Label x:Name="popDarknessLbl" Content="Darkness:" Grid.Row="4" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                                <TextBox x:Name="popDarkness" Text="Enter Darkness..." Grid.Row="5" LostFocus="UxSettings_LostFocus" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" GotFocus="UxSettings_GotFocus"/>
+                                <Button x:Name="popBtnTestPrint" Content="Print Test Label" Grid.Row="6" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Click="popBtnTestPrint_Click"/>
+                            </Grid>
+                        </Viewbox>
+                    </Popup>
+                </Canvas>
                 <RadioButton x:Name="rdo610" GroupName="Printers" Content="Mass Print - 610" Grid.Column="0" Grid.Row="0" VerticalContentAlignment="Center" HorizontalAlignment="Left" VerticalAlignment="Center" Checked="rdoPrinter_Checked"/>
-            <CheckBox x:Name="ckCut" Content="Enable Cutter" Grid.Column="1"  Grid.Row="0" VerticalContentAlignment="Center" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
-            <RadioButton x:Name="rdo220" GroupName="Printers" Content="Print N Peel - 220" Grid.Column="0"  Grid.Row="1" VerticalContentAlignment="Center" HorizontalAlignment="Left" VerticalAlignment="Center" Checked="rdoPrinter_Checked"/>
-            <CheckBox x:Name="ckPrinterA" Content="Printer A" Grid.Column="1" Grid.Row="1" VerticalAlignment="Bottom" HorizontalAlignment="Left" VerticalContentAlignment="Center" Checked="PeelPrinter_Checked" Unchecked="PeelPrinter_Checked" IsThreeState="False" Margin="0,0,0,25"/>
-            <CheckBox x:Name="ckPrinterB" Content="Printer B" Grid.Column="1" Grid.Row="1" VerticalAlignment="Bottom" HorizontalAlignment="Left" VerticalContentAlignment="Center" Checked="PeelPrinter_Checked" Unchecked="PeelPrinter_Checked" IsThreeState="False"/>
+                <CheckBox x:Name="ckCut" Content="Enable Cutter" Grid.Column="1"  Grid.Row="0" VerticalContentAlignment="Center" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
+                <RadioButton x:Name="rdo220" GroupName="Printers" Content="Print N Peel - 220" Grid.Column="0"  Grid.Row="1" VerticalContentAlignment="Center" HorizontalAlignment="Left" VerticalAlignment="Center" Checked="rdoPrinter_Checked"/>
+                <CheckBox x:Name="ckPrinterA" Content="Printer A" Grid.Column="1" Grid.Row="1" VerticalAlignment="Bottom" HorizontalAlignment="Left" VerticalContentAlignment="Center" Checked="PeelPrinter_Checked" Unchecked="PeelPrinter_Checked" IsThreeState="False" Margin="0,0,0,25"/>
+                <CheckBox x:Name="ckPrinterB" Content="Printer B" Grid.Column="1" Grid.Row="1" VerticalAlignment="Bottom" HorizontalAlignment="Left" VerticalContentAlignment="Center" Checked="PeelPrinter_Checked" Unchecked="PeelPrinter_Checked" IsThreeState="False"/>
 
-            <TextBlock x:Name="txtStatus" Margin="10" HorizontalAlignment="Stretch" Grid.Column="1" Grid.Row="2" VerticalAlignment="Top"/>
-            <TextBlock x:Name="txbStatus" Margin="10" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="3"/>
-            <TextBlock x:Name="txbQueue"  Margin="10" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="4"/>
+                <TextBlock x:Name="txtStatus" Margin="10" HorizontalAlignment="Stretch" Grid.Column="1" Grid.Row="2" VerticalAlignment="Top"/>
+                <TextBlock x:Name="txbStatus" Margin="10" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="3"/>
+                <TextBlock x:Name="txbQueue"  Margin="10" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="4"/>
 
-            <Button x:Name="btnSettings" HorizontalAlignment="Right" Grid.Column="1" Grid.Row="5" Click="btnSettings_Click" Margin="10" Width="75">
-                <Image Source="/Assets/Options.png" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
-            </Button>
+                <Button x:Name="btnSettings" HorizontalAlignment="Right" Grid.Column="1" Grid.Row="5" Click="btnSettings_Click" Margin="10" Width="75">
+                    <Image Source="/Assets/Options.png" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                </Button>
             
-        </Grid>
+            </Grid>
         </Viewbox>                         
 
         <ComboBox x:Name="cbxClients" Grid.Column="1" VerticalContentAlignment="Center" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="10" SelectionChanged="cbxClients_SelectionChanged" MinWidth="105" MaxWidth="200" MaxDropDownHeight="1000"/>
@@ -118,6 +120,25 @@
                     <ColumnDefinition/>
                     <ColumnDefinition/>
                 </Grid.ColumnDefinitions>
+                <Canvas>
+                    <Popup x:Name="popStart" >
+                        <Grid Background="LightGray">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition/>
+                                <ColumnDefinition MinWidth="30"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock x:Name="popTxbStartNumLbl" Text="Enter Starting Number:" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                            <TextBox x:Name="popTxtStartNum" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                            <Button x:Name="popBtnStartNum" Grid.Row="1" Grid.Column="1" Content="Select" HorizontalAlignment="Right" VerticalAlignment="Stretch"/>
+
+                        </Grid>
+                    </Popup>
+                </Canvas>
                 
                 <Button x:Name="btnPrint" Content="Print" IsEnabled="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="10" Click="btnPrint_Click"/>
                 <Button x:Name="btnCancel" Content="Cancel Prints" IsEnabled="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="10" Grid.Column="1" Click="btnCancel_Click"/>
