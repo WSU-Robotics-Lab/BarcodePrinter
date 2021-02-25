@@ -47,7 +47,7 @@ namespace BarcodePrinter
         Customer selectedCustomer;
         Repository dbCommands;
         int iStartNum = -1;
-
+        bool BothPeelsPrinting = false;
         //private Timer _StatusTimer;
         #endregion
 
@@ -114,8 +114,12 @@ namespace BarcodePrinter
                 txtStatus.Refresh();
                 Cursor = Cursors.Wait;
                 _PrinterConnections.Add(new Zebra.Sdk.Comm.TcpConnection("lbl-cv-174h-2.dyn.wichita.edu", 9100));
-                _PrinterConnections.LastOrDefault().Open();
+                //_PrinterConnections.LastOrDefault().Open();
                 txtStatus.Text = "220 - Printer A Connected";
+                if (!(bool)ckPrinterA.IsChecked)
+                {
+                    throw new Exception();
+                }
             }
             catch (Exception) { _PrinterConnections.Remove(_PrinterConnections.LastOrDefault()); }
             finally { Cursor = Cursors.Arrow; }
@@ -128,11 +132,19 @@ namespace BarcodePrinter
                 _PrinterConnections.Add(new Zebra.Sdk.Comm.TcpConnection("lbl-cv-174h-3.dyn.wichita.edu", 9100));
                 _PrinterConnections.LastOrDefault().Open();
                 txtStatus.Text = "220 - Printer B Connected";
+                if (!(bool)ckPrinterB.IsChecked)
+                {
+                    throw new Exception();
+                }
             }
             catch (Exception) { _PrinterConnections.Remove(_PrinterConnections.LastOrDefault()); }
             finally { Cursor = Cursors.Arrow; }
 
+            
             txtStatus.Text = "Number Connected: " + _PrinterConnections.Count.ToString();
+            if ((bool)ckPrinterA.IsChecked)
+            {
+            }
         }
 
         private void attemptUSBConnection()
@@ -216,8 +228,6 @@ namespace BarcodePrinter
                 iCustNum = int.Parse(SelectedClient.Code.Substring(1));
             }
 
-            //TODO: using more than 1 printer
-                        
             Queue<PrintJob> jobs = new Queue<PrintJob>();
             foreach (Zebra.Sdk.Comm.ConnectionA Printer in _PrinterConnections)
             {
@@ -275,6 +285,12 @@ namespace BarcodePrinter
             }
             else if (rdo220.IsChecked.HasValue && rdo220.IsChecked.Equals(true))
             {
+                if (!(bool)ckPrinterA.IsChecked && !(bool)ckPrinterB.IsChecked)
+                {
+                    MessageBox.Show("Must select Printer A or Printer B");
+                    rdo220.IsChecked = false;
+                    return;
+                }
                 attempt220Connection();
                 if (_PrinterConnections.Count > 0)
                 {
@@ -389,12 +405,7 @@ namespace BarcodePrinter
             grdFoundclients.ItemsSource = found;
         }
 
-        private void PeelPrinter_Checked(object sender, RoutedEventArgs e)
-        {
-         //   BothPeelsPrinting = (bool)ckPrinterA.IsChecked && (bool)ckPrinterB.IsChecked;
-        }
-
-       private void cbxClients_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void cbxClients_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             SelectedClient = clients[cbxClients.SelectedIndex];
             SetStartNum();
@@ -422,7 +433,6 @@ namespace BarcodePrinter
 
             if (selectedCustomer == null)//didn't find it
             {
-                //TODO: prompt for start num
                 MessageBox.Show("Customer not listed in database:\nSupply starting barcode and the customer will be added to database.");
                 popStart.IsOpen = true;
             }

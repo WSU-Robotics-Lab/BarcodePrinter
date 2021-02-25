@@ -86,56 +86,5 @@ namespace BarcodePrinter
         //        }
         //    }
         //}
-
-        public bool TryAddCustomer(Client c)
-        {
-            using (SqlConnection sqlConn = new SqlConnection(MDLConnect))
-            {
-                using (SqlCommand cmd = new SqlCommand("dbo.CreateCustomer", sqlConn))
-                {
-                    //todo: update these fields and params
-                    var p = new SqlParameter("Client_Num", SqlDbType.NVarChar, 128);
-                    p.Value = c.Name;
-                    cmd.Parameters.Add(p);
-
-                    p = new SqlParameter("Client_Code", SqlDbType.Int);
-                    p.Value = c.Code;
-                    cmd.Parameters.Add(p);
-
-                    p = new SqlParameter("Success", SqlDbType.Bit);
-                    p.Direction = ParameterDirection.Output;
-                    cmd.Parameters.Add(p);
-
-                    return (bool)cmd.Parameters["Success"].Value;
-                }
-            }
-        }
-
-        public string GetBarcode(Client c)
-        {
-            //using (OracleConnection oracleConnection = new OracleConnection(oracleConnection))
-            using (SqlConnection sqlConnection = new SqlConnection(MDLConnect))
-            {
-                //using (OracleCommand = new OracleCommand("SELECT Barcode FROM V_GET_BARCODES, oracleConnection))
-                using (SqlCommand cmd = new SqlCommand("dbo.GetLastBarcode"))//todo: update the command and parameter names
-                {
-                    var p = new SqlParameter("Client_Num", SqlDbType.NVarChar, 128);
-                    p.Value = c.Code;
-                    cmd.Parameters.Add(p);
-
-                    p = new SqlParameter("Client_Name", SqlDbType.NVarChar, 128);
-                    p.Value = c.Name;
-                    cmd.Parameters.Add(p);
-
-                    p = new SqlParameter("Barcode", SqlDbType.NVarChar, 128);
-                    p.Direction = ParameterDirection.Output;
-                    cmd.Parameters.Add(p);
-
-                    cmd.ExecuteNonQuery();
-
-                    return (string)cmd.Parameters["Barcode"].Value;
-                }
-            }
-        }
     }
 }
