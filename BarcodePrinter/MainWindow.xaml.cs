@@ -66,7 +66,7 @@ namespace BarcodePrinter
             //read in customers and add to combobox
             try
             {
-                GetClinics();//doesn't work from NIAR
+                //GetClinics();//doesn't work from NIAR
             }
             catch
             {

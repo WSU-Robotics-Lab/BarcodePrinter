@@ -50,10 +50,10 @@ namespace BarcodePrinter
                 model = "220";
 
             //USB Printers
-            //else if (PrinterInformation.Contains("420"))
-            //    model = "420";
-            //else if (PrinterInformation.Contains("410"))
-            //    model = "410";
+            else if (PrinterInformation.Contains("420"))
+                model = "420";
+            else if (PrinterInformation.Contains("410"))
+                model = "410";
 
         }
         public bool PrintMainLabel(int left, int top, int darkness, int iCustNum, out string sent)
@@ -193,8 +193,9 @@ namespace BarcodePrinter
             //    MainLabel.Append("^FO30,250,0 ^A0N,45,0 ^FB550,1,0,C ^FN2^FS ");
             //} else
             //{
-            label.Append("^FO").Append(left.ToString()).Append(top.ToString()).Append(",0 ^BXN,6,200,16,16 ^FN1^FS ");
-            label.Append("^FO").Append(left.ToString()).Append((top + 100).ToString()).Append(",0 ^A0N,30,0 ^FB400,1,0,L ^FN2^FS ");
+            
+            label.Append("^FO").Append(left.ToString()).Append(",").Append(top.ToString()).Append(",0 ^BXN,6,200,14,14 ^FN1^FS ");
+            label.Append("^FO").Append(left.ToString()).Append(",").Append((top + 100).ToString()).Append(",0 ^A0N,30,0 ^FB400,1,0,L ^FN2^FS ");
             //}
             label.Append("^XZ");
             try
@@ -257,8 +258,8 @@ namespace BarcodePrinter
                 }
                 if (!errValue)
                 {
-                    string sNumWDashes = String.Format("{0,0:0000}-{1,0:000-000-000}", barcode.Substring(0,4), barcode.Substring(4));
-                    string sNumOnly = String.Format("{0,0:0000}{1,0:000000000}", barcode.Substring(0, 4), barcode.Substring(4));
+                    string sNumWDashes = String.Format("{0,0:0000}-000-{1,0:000-000-000}", barcode.Substring(0,4), barcode.Substring(4));
+                    string sNumOnly = String.Format("{0,0:0000}000{1,0:000000000}", barcode.Substring(0, 4), barcode.Substring(4));
 
                     StringBuilder individualLabel = new StringBuilder();
                     individualLabel.AppendLine("^XA");
@@ -278,7 +279,7 @@ namespace BarcodePrinter
                         }
                     }
                     PrintNum++;
-                }
+                } 
             }
             return false;
         }
