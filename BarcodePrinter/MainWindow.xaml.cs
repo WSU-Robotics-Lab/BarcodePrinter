@@ -15,6 +15,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -78,9 +79,10 @@ namespace BarcodePrinter
 
         private async void test()
         {
-            //APIAccessor.SetAuth(Environment.UserName, "pass");
+            APIAccessor.SetAuth(Environment.UserName, "pass");
+                        
             //TODO: remove after debugging
-            APIAccessor.SetAuth("b333m439", "pass");
+            //APIAccessor.SetAuth("b333m439", "pass");
             //TODO: remove after debugging
             var l = await APIAccessor.LabelAccessor.GetAllLabelsAsync();
         }
@@ -227,6 +229,14 @@ namespace BarcodePrinter
             {
                 iCustNum = int.Parse(SelectedClient.Code.Substring(1));
             }
+            if (!await SetStartNum())
+            {
+                return;
+            }
+            var start = await APIAccessor.LabelAccessor.GetPrintLabelAsync(selectedCustomer.CustomerID.ToString());
+
+            if (start.Contains("startnum"))
+                AddLabel();
 
             Queue<PrintJob> jobs = new Queue<PrintJob>();
             foreach (Zebra.Sdk.Comm.ConnectionA Printer in _PrinterConnections)
@@ -235,38 +245,32 @@ namespace BarcodePrinter
             }
 
             iStartNum = 14;
-            Queue<string> barcodes = new Queue<string>();
-            await APIAccessor.LabelAccessor.PostCreateLabel(new API_Lib.Models.ProcedureModels.InputModels.CreateLabelInput(selectedCustomer.CustomerNumber, SelectedClient.Name, iStartNum, iNumLabels));
             
-            for(int i = 0; i < iNumLabels; i++)
-            {
-                barcodes.Enqueue(await APIAccessor.LabelAccessor.GetPrintLabelAsync(selectedCustomer.CustomerID.ToString()));
-            }
-
             if (jobs.Peek().PrintMainLabel(iCustNum, out string test))
             {
-                txbStatus.Text = "Main Label Printed"; txbStatus.Refresh();
+                txtStatus.Text = "Main Label Printed"; txtStatus.Refresh();
             }
             
             //TODO: queues need testing
-            while (barcodes.Count > 0)
+            for (int i = 0; i < iNumLabels; i++)
             {
                 var p = jobs.Dequeue();
-                string barcode = barcodes.Dequeue();
-
+                string barcode = await APIAccessor.LabelAccessor.GetPrintLabelAsync(selectedCustomer.CustomerID.ToString());
                 if (p.PrintIndividualLabels(barcode, (bool)ckCut.IsChecked, out string error))
                 {
-                    txbStatus.Text = "Printing Label: " + barcode.ToString();
-                    txbStatus.Refresh();
+                    if (barcode == await APIAccessor.LabelAccessor.GetPrintLabelAsync(selectedCustomer.CustomerID.ToString(), true))
+                    {
+                        txtStatus.Text = "Printing Label: " + barcode.ToString();
+                        txtStatus.Refresh();
+                    }
+
                 }
                 else
                 {
                     MessageBox.Show(error);
                     break;
                 }
-
                 
-
                 jobs.Enqueue(p);
             }
         }
@@ -341,8 +345,8 @@ namespace BarcodePrinter
                 individualLabel.AppendLine("~JA");
                 individualLabel.AppendLine("^XZ");
 
-                txbStatus.Text = "Sending Cancel" + System.Environment.NewLine + txbStatus.Text;
-                txbStatus.Refresh();
+                txtStatus.Text = "Sending Cancel" + System.Environment.NewLine + txtStatus.Text;
+                txtStatus.Refresh();
                 Printer.Write(Encoding.ASCII.GetBytes(individualLabel.ToString()));
             }
         }
@@ -383,12 +387,7 @@ namespace BarcodePrinter
         private void UxSettings_GotFocus(object sender, RoutedEventArgs e)
         {
             TextBox txb = sender as TextBox;
-            if (txb.Name.ToUpper().Contains("LEFT"))
-                popLeft.SelectAll();
-            else if (txb.Name.ToUpper().Contains("TOP"))
-                popTop.SelectAll();
-            else
-                popDarkness.SelectAll();
+            txb.Text = "";
         }
 
         private void cbxSubCustomers_TextChanged(object sender, TextChangedEventArgs e)
@@ -408,23 +407,21 @@ namespace BarcodePrinter
         private void cbxClients_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             SelectedClient = clients[cbxClients.SelectedIndex];
-            SetStartNum();
         }
 
         private void grdFoundclients_SelectedCellsChanged(object sender, SelectedCellsChangedEventArgs e)
         {
             SelectedClient = grdFoundclients.SelectedItem as Client;
             cbxClients.SelectedIndex = clients.IndexOf(SelectedClient);
-            SetStartNum();
         }
 
-        private async void SetStartNum()
+        private async Task<bool> SetStartNum()
         {
             selectedCustomer = null;
             List<Customer> customers = await APIAccessor.CustomerAccessor.GetAllCustomersAsync();
             foreach (Customer c in customers)//look for customer
             {
-                if (c.CustomerNumber == SelectedClient.Code.Substring(1))
+                if (int.Parse(c.CustomerNumber) == int.Parse(SelectedClient.Code.Substring(1)))
                 {
                     selectedCustomer = c;
                     break;
@@ -435,10 +432,12 @@ namespace BarcodePrinter
             {
                 MessageBox.Show("Customer not listed in database:\nSupply starting barcode and the customer will be added to database.");
                 popStart.IsOpen = true;
+                return false;
             }
             else
             {
                 iStartNum = await APIAccessor.BarcodeAccessor.GetLastNum(selectedCustomer.CustomerID);
+                return true;
             }
         }
 
@@ -464,11 +463,23 @@ namespace BarcodePrinter
             if (int.TryParse(popTxtStartNum.Text, out iStartNum) && iStartNum > -1)
             {
                 popStart.IsOpen = false;
-                btnPrint_Click(sender, e);
+                AddLabel();
             }
             else
             {
                 MessageBox.Show("Start num must be an integer with value 0 or more");
+            }
+        }
+
+        private async void AddLabel()
+        {
+            if (int.TryParse(txtNumLabels.Text, out int numLabels))
+            {
+                var res = await APIAccessor.LabelAccessor.PostCreateLabel(new API_Lib.Models.ProcedureModels.InputModels.CreateLabelInput(SelectedClient.Code, SelectedClient.Name, iStartNum, numLabels));
+            }
+            else
+            {
+                MessageBox.Show("Must include label quantity");
             }
         }
 
