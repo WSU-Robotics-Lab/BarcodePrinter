@@ -33,6 +33,7 @@
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                 <RowDefinition/>
+                <RowDefinition Height="5"/>
                 <RowDefinition/>
                 <RowDefinition/>
                 <RowDefinition/>
@@ -69,12 +70,11 @@
                 </Canvas>
                 <RadioButton x:Name="rdo610" GroupName="Printers" Content="Mass Print - 610" Grid.Column="0" Grid.Row="0" VerticalContentAlignment="Center" HorizontalAlignment="Left" VerticalAlignment="Center" Checked="rdoPrinter_Checked"/>
                 <CheckBox x:Name="ckCut" Content="Enable Cutter" Grid.Column="1"  Grid.Row="0" VerticalContentAlignment="Center" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
-                <RadioButton x:Name="rdo220" GroupName="Printers" Content="Print N Peel - 220" Grid.Column="0"  Grid.Row="1" VerticalContentAlignment="Center" HorizontalAlignment="Left" VerticalAlignment="Center" Checked="rdoPrinter_Checked"/>
-                <CheckBox x:Name="ckPrinterA" Content="Printer A" Grid.Column="1" Grid.Row="1" VerticalAlignment="Bottom" HorizontalAlignment="Left" VerticalContentAlignment="Center" IsThreeState="False" Margin="0,0,0,25" Checked="ckPrinter_Checked" Unchecked="ckPrinter_Checked"/>
-                <CheckBox x:Name="ckPrinterB" Content="Printer B" Grid.Column="1" Grid.Row="1" VerticalAlignment="Bottom" HorizontalAlignment="Left" VerticalContentAlignment="Center" IsThreeState="False" Checked="ckPrinter_Checked" Unchecked="ckPrinter_Checked"/>
+                <RadioButton x:Name="rdo220" GroupName="Printers" Content="Print N Peel - 220" Grid.Column="0"  Grid.Row="2" VerticalContentAlignment="Center" HorizontalAlignment="Left" VerticalAlignment="Center" Checked="rdoPrinter_Checked"/>
+                <CheckBox x:Name="ckPrinterA" Content="Printer A" Grid.Column="1" Grid.Row="2" VerticalAlignment="Bottom" HorizontalAlignment="Left" VerticalContentAlignment="Center" IsThreeState="False" Margin="0,0,0,25" Checked="ckPrinter_Checked" Unchecked="ckPrinter_Checked"/>
+                <CheckBox x:Name="ckPrinterB" Content="Printer B" Grid.Column="1" Grid.Row="2" VerticalAlignment="Bottom" HorizontalAlignment="Left" VerticalContentAlignment="Center" IsThreeState="False" Checked="ckPrinter_Checked" Unchecked="ckPrinter_Checked"/>
 
-                <TextBlock x:Name="txtStatus" Margin="10" HorizontalAlignment="Stretch" Grid.Column="1" Grid.Row="2" VerticalAlignment="Top"/>
-                <TextBlock x:Name="txbStatus" Margin="10" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="3"/>
+                <TextBlock x:Name="txtStatus" Margin="10" HorizontalAlignment="Stretch" Grid.Column="1" Grid.Row="3" VerticalAlignment="Top"/>
                 <TextBlock x:Name="txbQueue"  Margin="10" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="4"/>
 
                 <Button x:Name="btnSettings" HorizontalAlignment="Right" Grid.Column="1" Grid.Row="5" Click="btnSettings_Click" Margin="10" Width="75">
