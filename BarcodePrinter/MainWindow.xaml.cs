@@ -55,8 +55,8 @@ namespace BarcodePrinter
 
         public MainWindow()
         {
-            clients = new List<Client>();
             InitializeComponent();
+            clients = new List<Client>();
             _PrinterConnections = new List<Zebra.Sdk.Comm.ConnectionA>();
             _Monitor = new System.Threading.Thread(new System.Threading.ThreadStart(Monitor_Thread));
             Title += " Version: " +  _Version;
@@ -79,12 +79,13 @@ namespace BarcodePrinter
 
         private async void test()
         {
-            APIAccessor.SetAuth(Environment.UserName, "pass");
+            //set user authorization
+            //APIAccessor.SetAuth(Environment.UserName, "pass");
                         
             //TODO: remove after debugging
-            //APIAccessor.SetAuth("b333m439", "pass");
+            APIAccessor.SetAuth("b333m439", "pass");
             //TODO: remove after debugging
-            var l = await APIAccessor.LabelAccessor.GetAllLabelsAsync();
+            
         }
 
         #region printer connections
@@ -238,20 +239,24 @@ namespace BarcodePrinter
             if (start.Contains("startnum"))
                 AddLabel();
 
+            string confirm = string.Format("{0} labels will be printed for {1}. This will start at {2} and go to {3}. Is this correct?", iNumLabels, SelectedClient.Name, iStartNum, iStartNum + iNumLabels);
+            var res = MessageBox.Show(confirm, "Confirm Printing", MessageBoxButton.YesNo);
+            if (res != MessageBoxResult.Yes) return;
+
             Queue<PrintJob> jobs = new Queue<PrintJob>();
             foreach (Zebra.Sdk.Comm.ConnectionA Printer in _PrinterConnections)
             {
                 jobs.Enqueue(new PrintJob(Printer, settings));
             }
 
-            iStartNum = 14;
+
             
             if (jobs.Peek().PrintMainLabel(iCustNum, out string test))
             {
                 txtStatus.Text = "Main Label Printed"; txtStatus.Refresh();
             }
             
-            //TODO: queues need testing
+            //TODO: queues need testing on location
             for (int i = 0; i < iNumLabels; i++)
             {
                 var p = jobs.Dequeue();

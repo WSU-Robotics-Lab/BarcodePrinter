@@ -110,9 +110,9 @@ namespace BarcodePrinter
             //    MainLabel.Append("^MMT");
             //}
 
-            MainLabel.Append("^FO").Append(left.ToString()).Append(top.ToString()).Append(",0 ^BXN,6,200,18,18 ^FD" + iCustNum.ToString() + " ^FS");//barcode
-            MainLabel.Append("^FO").Append(left.ToString()).Append(top.ToString()).Append(",0 ^A0N,60,0 ^FB400,1,0,C ^FD CUST ^FS");//CUST
-            MainLabel.Append("^FO").Append(left.ToString()).Append((top + 50).ToString()).Append(",0 ^A0N,60,0 ^FB400,1,0,C ^FD" + iCustNum.ToString() + " ^FS");//####
+            MainLabel.Append("^FO").Append(left.ToString()).Append(",").Append(top.ToString()).Append(",0 ^BXN,6,200,18,18 ^FD" + iCustNum.ToString() + " ^FS");//barcode
+            MainLabel.Append("^FO").Append(left.ToString()).Append(",").Append(top.ToString()).Append(",0 ^A0N,60,0 ^FB400,1,0,C ^FD CUST ^FS");//CUST
+            MainLabel.Append("^FO").Append(left.ToString()).Append(",").Append((top + 50).ToString()).Append(",0 ^A0N,60,0 ^FB400,1,0,C ^FD" + iCustNum.ToString() + " ^FS");//####
 
             MainLabel.Append("^XZ");
             try
