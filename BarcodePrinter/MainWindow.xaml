@@ -73,7 +73,7 @@
                 <RadioButton x:Name="rdo220" GroupName="Printers" Content="Print N Peel - 220" Grid.Column="0"  Grid.Row="2" VerticalContentAlignment="Center" HorizontalAlignment="Left" VerticalAlignment="Center" Checked="rdoPrinter_Checked"/>
                 <CheckBox x:Name="ckPrinterA" Content="Printer A" Grid.Column="1" Grid.Row="2" VerticalAlignment="Bottom" HorizontalAlignment="Left" VerticalContentAlignment="Center" IsThreeState="False" Margin="0,0,0,25" Checked="ckPrinter_Checked" Unchecked="ckPrinter_Checked"/>
                 <CheckBox x:Name="ckPrinterB" Content="Printer B" Grid.Column="1" Grid.Row="2" VerticalAlignment="Bottom" HorizontalAlignment="Left" VerticalContentAlignment="Center" IsThreeState="False" Checked="ckPrinter_Checked" Unchecked="ckPrinter_Checked"/>
-
+                <RadioButton x:Name="rdoUSB" GroupName="Printers" Content="USB - 410/420" Grid.Row="3" VerticalAlignment="Center" HorizontalAlignment="Left" Checked="rdoPrinter_Checked"/>
                 <TextBlock x:Name="txtStatus" Margin="10" HorizontalAlignment="Stretch" Grid.Column="1" Grid.Row="3" VerticalAlignment="Top"/>
                 <TextBlock x:Name="txbQueue"  Margin="10" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="4"/>
 
@@ -82,33 +82,29 @@
                 </Button>
             
             </Grid>
-        </Viewbox>                         
-
-        <ComboBox x:Name="cbxClients" Grid.Column="1" VerticalContentAlignment="Center" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="10" SelectionChanged="cbxClients_SelectionChanged" MinWidth="105" MaxWidth="200" MaxDropDownHeight="1000"/>
-        
-        <Viewbox Stretch="Uniform" Margin="10">
-            <TextBlock Text="Customer Number: " HorizontalAlignment="Right" VerticalAlignment="Center" Grid.Column="0" Grid.Row="0"/>
         </Viewbox>
+
+        <Viewbox Stretch="Uniform" Margin="10"/>
         <DataGrid x:Name="grdFoundclients" Grid.Row="1" Grid.RowSpan="3" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Margin="10,0,0,10" IsReadOnly="True" SelectedCellsChanged="grdFoundclients_SelectedCellsChanged"/>
-        <Viewbox Grid.Row="1" Grid.Column="1" Stretch="Uniform">
+        <Viewbox Stretch="Uniform">
             <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition/>
-                    <ColumnDefinition/>
-                </Grid.ColumnDefinitions>
-                <TextBlock x:Name="txbClientSearch" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Text="Customer Search:" Margin="5,0,5,0"/>
-                <TextBox x:Name="txtClientSearch" Grid.Column="1" VerticalContentAlignment="Center" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" TextChanged="cbxSubCustomers_TextChanged" Width="90"/>
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <TextBlock x:Name="txbClientSearch" VerticalAlignment="Stretch" HorizontalAlignment="Left" Text="Customer Search:" Margin="5,0,25,0"/>
+                <TextBox x:Name="txtClientSearch" Grid.Row="1" VerticalContentAlignment="Center" HorizontalAlignment="Right" VerticalAlignment="Stretch" TextChanged="txtClientSearch_TextChanged" Width="90" Margin="25,0,5,0"/>
             </Grid>
         </Viewbox>
-        <Viewbox Grid.Row="2" Grid.Column="1" Stretch="Uniform">
+        <Viewbox Grid.Column="1" Stretch="Uniform">
             <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition/>
-                    <ColumnDefinition/>
-                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
                 
-                <TextBox x:Name="txtNumLabels" Grid.Column="1" Width="90" VerticalContentAlignment="Center" HorizontalAlignment="Right" VerticalAlignment="Stretch" LostFocus="TextBox_LostFocus"/>
-                <TextBlock Text="Number of Labels: " HorizontalAlignment="Left" VerticalAlignment="Center" Margin="5,0,5,0"/>
+                <TextBlock Text="Number of Labels:" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="0,0,25,0"/>
+                <TextBox x:Name="txtNumLabels" Grid.Row="1" Width="90" VerticalContentAlignment="Center" HorizontalAlignment="Right" VerticalAlignment="Stretch" LostFocus="TextBox_LostFocus"/>
 
             </Grid>
         </Viewbox>
