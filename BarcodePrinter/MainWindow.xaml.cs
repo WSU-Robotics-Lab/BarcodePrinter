@@ -67,20 +67,20 @@ namespace BarcodePrinter
             //read in customers and add to combobox
             try
             {
-                //GetClinics();//doesn't work from NIAR
+                GetClinics();//doesn't work from NIAR
             }
             catch
             {
                 MessageBox.Show("Problem getting Clinics");
             }
-
+            APIAccessor.SetAuth(Environment.UserName, "pass");
             test();
         }
 
         private async void test()
         {
             //set user authorization
-            //APIAccessor.SetAuth(Environment.UserName, "pass");
+            
                         
             //TODO: remove after debugging
             APIAccessor.SetAuth("b333m439", "pass");
