@@ -40,7 +40,7 @@ namespace BarcodePrinter
         #region fields
         private List<Zebra.Sdk.Comm.ConnectionA> _PrinterConnections;
         private System.Threading.Thread _Monitor;
-
+        
         private PrinterSettings settings;
         PrinterUsed selectedPrinter;
         List<Client> clients;
@@ -48,7 +48,7 @@ namespace BarcodePrinter
         Customer selectedCustomer;
         Repository dbCommands;
         int iStartNum = -1;
-        bool BothPeelsPrinting = false;
+        //bool BothPeelsPrinting = false;
         //private Timer _StatusTimer;
         #endregion
 
@@ -64,17 +64,18 @@ namespace BarcodePrinter
 
             dbCommands = new Repository();
 
-            //read in customers and add to combobox
+            //read in customers and add to grid
             try
             {
                 GetClinics();//doesn't work from NIAR
             }
             catch
             {
-                MessageBox.Show("Problem getting Clinics");
+                GetCustomers();
             }
             APIAccessor.SetAuth(Environment.UserName, "pass");
             test();
+            
         }
 
         private async void test()
@@ -83,9 +84,9 @@ namespace BarcodePrinter
             
                         
             //TODO: remove after debugging
-            APIAccessor.SetAuth("b333m439", "pass");
+            //APIAccessor.SetAuth("b333m439", "pass");
             //TODO: remove after debugging
-            
+
         }
 
         #region printer connections
@@ -107,6 +108,8 @@ namespace BarcodePrinter
                 txtStatus.Text = "610 - Not Connected";
             }
             finally { Cursor = Cursors.Arrow; }
+
+
         }
 
         private void attempt220Connection()
@@ -177,7 +180,7 @@ namespace BarcodePrinter
             
             attempt610Connection();
             attempt220Connection();
-            //attemptUSBConnection();
+            attemptUSBConnection();
         }
 
         #endregion
@@ -186,10 +189,21 @@ namespace BarcodePrinter
         {
             //read clients from database
             clients = dbCommands.SelectAllClients();
-            clients.ForEach(c => cbxClients.Items.Add(string.Format("{0} - {1}", c.Code, c.Name)));
             grdFoundclients.ItemsSource = clients;
+            grdFoundclients.Refresh();
         }
-        
+        private async void GetCustomers()
+        {
+            foreach (Customer c in await APIAccessor.CustomerAccessor.GetAllCustomersAsync())
+            {
+                clients.Add(new Client("No connection", "C" + c.CustomerNumber));
+            }
+
+            grdFoundclients.ItemsSource = clients;
+            grdFoundclients.Refresh();
+        }
+
+
         private void btnExit_Click(object sender, RoutedEventArgs e)
         {
             _Monitor.Abort(); 
@@ -209,7 +223,7 @@ namespace BarcodePrinter
 
         private async void btnPrint_Click(object sender, RoutedEventArgs e)
         {
-            if (!rdo220.IsChecked.HasValue && !rdo610.IsChecked.HasValue)
+            if (!rdo220.IsChecked.HasValue && !rdo610.IsChecked.HasValue && !rdoUSB.IsChecked.HasValue)
             {
                 MessageBox.Show("Must select a printer.");
                 return;
@@ -234,10 +248,12 @@ namespace BarcodePrinter
             {
                 return;
             }
-            var start = await APIAccessor.LabelAccessor.GetPrintLabelAsync(selectedCustomer.CustomerID.ToString());
+            var start = await APIAccessor.LabelAccessor.GetPrintLabelAsync(SelectedClient.Code.Substring(1));
 
             if (start.Contains("startnum"))
+            {
                 AddLabel();
+            }
 
             string confirm = string.Format("{0} labels will be printed for {1}. This will start at {2} and go to {3}. Is this correct?", iNumLabels, SelectedClient.Name, iStartNum, iStartNum + iNumLabels);
             var res = MessageBox.Show(confirm, "Confirm Printing", MessageBoxButton.YesNo);
@@ -261,6 +277,8 @@ namespace BarcodePrinter
             {
                 var p = jobs.Dequeue();
                 string barcode = await APIAccessor.LabelAccessor.GetPrintLabelAsync(selectedCustomer.CustomerID.ToString());
+
+                //printing
                 if (p.PrintIndividualLabels(barcode, (bool)ckCut.IsChecked, out string error))
                 {
                     if (barcode == await APIAccessor.LabelAccessor.GetPrintLabelAsync(selectedCustomer.CustomerID.ToString(), true))
@@ -275,7 +293,7 @@ namespace BarcodePrinter
                     MessageBox.Show(error);
                     break;
                 }
-                
+
                 jobs.Enqueue(p);
             }
         }
@@ -306,15 +324,14 @@ namespace BarcodePrinter
                     selectedPrinter = PrinterUsed.p220;
                 }
             }
-            //removing USB printers for now
-            //else if (rdoUSB.IsChecked.HasValue && rdoUSB.IsChecked.Equals(true))
-            //{
-            //  attemptUSBConnection();
-                //if (_PrinterConnections.Count > 0)
-                //{
-                //    selectedPrinter = PrinterUsed.pUSB;
-                //}
-            //}
+            else if (rdoUSB.IsChecked.HasValue && rdoUSB.IsChecked.Equals(true))
+            {
+                attemptUSBConnection();
+                if (_PrinterConnections.Count > 0)
+                {
+                    selectedPrinter = PrinterUsed.pUSB;
+                }
+            }
 
             txtStatus.Text = "Number Connected: " + _PrinterConnections.Count.ToString();
             
@@ -395,7 +412,7 @@ namespace BarcodePrinter
             txb.Text = "";
         }
 
-        private void cbxSubCustomers_TextChanged(object sender, TextChangedEventArgs e)
+        private void txtClientSearch_TextChanged(object sender, TextChangedEventArgs e)
         {
             grdFoundclients.ItemsSource = null;
             grdFoundclients.Items.Clear();
@@ -409,15 +426,9 @@ namespace BarcodePrinter
             grdFoundclients.ItemsSource = found;
         }
 
-        private void cbxClients_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            SelectedClient = clients[cbxClients.SelectedIndex];
-        }
-
         private void grdFoundclients_SelectedCellsChanged(object sender, SelectedCellsChangedEventArgs e)
         {
             SelectedClient = grdFoundclients.SelectedItem as Client;
-            cbxClients.SelectedIndex = clients.IndexOf(SelectedClient);
         }
 
         private async Task<bool> SetStartNum()
@@ -441,7 +452,13 @@ namespace BarcodePrinter
             }
             else
             {
-                iStartNum = await APIAccessor.BarcodeAccessor.GetLastNum(selectedCustomer.CustomerID);
+                if (string.IsNullOrEmpty(popTxtStartNum.Text))
+                {
+                    string str = await APIAccessor.LabelAccessor.GetPrintLabelAsync(SelectedClient.Code.Substring(1));
+                }
+                    //iStartNum = ;
+                else
+                    iStartNum = int.Parse(popTxtStartNum.Text);
                 return true;
             }
         }

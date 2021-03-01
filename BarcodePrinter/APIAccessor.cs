@@ -264,10 +264,6 @@ namespace BarcodePrinter
                 return await Put(url + p.PrinterID, p);
             }
 
-            //public static async Task<> PostPrintLabel(PrintLabelInput input)
-            //{
-            //    return ()
-            //}
         }
 
         public static class ReagentAccessor
