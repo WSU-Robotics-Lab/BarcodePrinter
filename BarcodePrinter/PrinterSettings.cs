@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static BarcodePrinter.PrintJob;
 
 namespace BarcodePrinter
 {
@@ -10,19 +11,26 @@ namespace BarcodePrinter
     {
         LabelSettings mainLabel;
         LabelSettings individualLabel;
-        public bool UseCutter;
-        public PrinterSettings(bool cutter)
+        public PrintOptions options;
+        public int PrintRate;
+        public int TearOffset;
+        public PrinterSettings(PrintOptions options = PrintOptions.End)
         {
             mainLabel = new LabelSettings();
             individualLabel = new LabelSettings(60, 50, 16);
-            UseCutter = cutter;
+            this.options = options;
+            PrintRate = 1;
+            TearOffset = -20;
         }
-        
-        public PrinterSettings(int mainLeft = 15, int mainTop = 60, int mainDarkness = 16, int indLeft = 15, int indTop = 40, int indDark = 16, bool cutter = false)
+
+        public PrinterSettings(PrintOptions options = PrintOptions.End, int mainLeft = 15, int mainTop = 60, int mainDarkness = 16, int indLeft = 15, int indTop = 40, int indDark = 16, int rate = 1, int tear = -20)
         {
-            mainLabel = new LabelSettings(mainLeft, mainTop, mainDarkness);
+
             individualLabel = new LabelSettings(indLeft, indTop, indDark);
-            UseCutter = cutter;
+            mainLabel = new LabelSettings(mainLeft, mainTop, mainDarkness);
+            this.options = options;
+            PrintRate = rate;
+            TearOffset = tear;
         }
 
         #region getters/setters

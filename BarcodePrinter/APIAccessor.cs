@@ -32,7 +32,7 @@ namespace BarcodePrinter
                
             try
             {
-                //if (!_auth) throw new Exception("Must supply credentials");
+                if (!_auth) throw new Exception("Must supply credentials");
 
                 var res = await client.GetStringAsync(url);
                 return JsonConvert.DeserializeObject<T>(res);   
@@ -259,9 +259,9 @@ namespace BarcodePrinter
                 return res.InUse == inUse;
             }
 
-            public static async Task<bool> PutPrinterAsync(Printer p)
+            public static async Task<bool> PostPrinterAsync(Printer p)
             {
-                return await Put(url + p.PrinterID, p);
+                return await Post(url + AllRoutes.Create, p);
             }
 
         }

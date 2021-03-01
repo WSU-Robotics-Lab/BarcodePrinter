@@ -9,10 +9,18 @@ namespace BarcodePrinter
 {
     public class PrintJob
     {
-        
-        private PrinterSettings printerSettings;
-        string model = "";
+        public enum PrintOptions
+        {
+            End,
+            Label,
+            Peel
+        }
+
+        public string Model { get; set; }
+        public string Identifier { get; set; }
+
         Zebra.Sdk.Comm.ConnectionA connection;
+        private PrinterSettings printerSettings;
         bool labelFormatSet = false;
         
         
@@ -21,6 +29,17 @@ namespace BarcodePrinter
             printerSettings = settings;
             connection = conn;
             QueryPrinter();
+
+            if (conn.SimpleConnectionName.Contains("usb"))
+            {
+                var c = (Zebra.Sdk.Comm.UsbConnection)conn;
+                Identifier = c.SerialNumber;
+            }
+            else
+            {
+                Identifier = conn.SimpleConnectionName.Split('.')[0];
+            }
+            
         }
         
         ~PrintJob()
@@ -45,22 +64,22 @@ namespace BarcodePrinter
 
             string PrinterInformation = Encoding.ASCII.GetString(connection.SendAndWaitForResponse(Encoding.ASCII.GetBytes(QueryPrinter.ToString()), 1000, 1000, ""));
             if (PrinterInformation.Contains("610"))
-                model = "610";
+                Model = "ZT610";
             else if (PrinterInformation.Contains("220"))
-                model = "220";
+                Model = "220";
 
             //USB Printers
             else if (PrinterInformation.Contains("420"))
-                model = "420";
+                Model = "ZD420";
             else if (PrinterInformation.Contains("410"))
-                model = "410";
+                Model = "ZD410";
 
         }
-        public bool PrintMainLabel(int left, int top, int darkness, int iCustNum, out string sent)
+        public bool PrintMainLabel(int left, int top, int darkness, int rate, int tear, int iCustNum, PrintOptions opt)
         {
             StringBuilder MainLabel = new StringBuilder();
             MainLabel.Append("^XA");
-            MainLabel.Append("^LH0,0 ");
+            MainLabel.Append("^LH0,0");
             MainLabel.Append("^LT0");
             MainLabel.Append("^LS0");
 
@@ -68,48 +87,23 @@ namespace BarcodePrinter
             //bx orientation, height, quality, columns, rows
             //a font orientation, character height (dots), width(dots)
             //fb width (dots), numlines, add or delete space, justification, hanging indent
-            if (model.Contains("610"))
-            {
-                // Print rate 
-                MainLabel.Append("^PR6");
-                // Darkness
-                MainLabel.Append("~SD").Append(darkness.ToString());
-                // Tear / Cut offset
-                MainLabel.Append("~TA-010");
-                // Thermal Transfer
-                MainLabel.Append("^MTD");
-                // print mode, T=tear, P=peel, C=cutter
-                if (printerSettings.UseCutter)
-                    MainLabel.Append("^MMC");
-                else
-                    MainLabel.Append("^MMT");
-            }
-            else if (model.Contains("220"))
-            {
-                MainLabel.Append("^PR1");
-                MainLabel.Append("~SD").Append(darkness.ToString());
-                MainLabel.Append("~TA-010");
-                MainLabel.Append("^MTD");
+            
+            // Print rate 
+            MainLabel.Append("^PR").Append(rate);
+            // Darkness
+            MainLabel.Append("~SD").Append(darkness.ToString());
+            // Tear / Cut offset
+            MainLabel.Append("~TA").Append(string.Format("{0:000}",tear));
+            // Thermal Transfer
+            MainLabel.Append("^MTD");
+            // print mode, T=tear, P=peel, C=cutter
+            if (opt == PrintOptions.Label)  
+                MainLabel.Append("^MMC");
+            else if (opt == PrintOptions.Peel)
                 MainLabel.Append("^MMP");
-            }
-            //USB Printers
-            //else if (model.Contains("420"))
-            //{
-            //    MainLabel.Append("^PR1");
-            //    MainLabel.Append("~SD").Append(darkness.ToString());
-            //    MainLabel.Append("~TA020");
-            //    MainLabel.Append("^MTD");
-            //    MainLabel.Append("^MMP");
-            //}
-            //else if (model.Contains("410"))
-            //{
-            //    MainLabel.Append("^PR1");
-            //    MainLabel.Append("~SD").Append(darkness.ToString());
-            //    MainLabel.Append("~TA020");
-            //    MainLabel.Append("^MTD");
-            //    MainLabel.Append("^MMT");
-            //}
-
+            else
+                MainLabel.Append("^MMT");
+            
             MainLabel.Append("^FO").Append(left.ToString()).Append(",").Append(top.ToString()).Append(",0 ^BXN,6,200,18,18 ^FD" + iCustNum.ToString() + " ^FS");//barcode
             MainLabel.Append("^FO").Append(left.ToString()).Append(",").Append(top.ToString()).Append(",0 ^A0N,60,0 ^FB400,1,0,C ^FD CUST ^FS");//CUST
             MainLabel.Append("^FO").Append(left.ToString()).Append(",").Append((top + 50).ToString()).Append(",0 ^A0N,60,0 ^FB400,1,0,C ^FD" + iCustNum.ToString() + " ^FS");//####
@@ -119,21 +113,19 @@ namespace BarcodePrinter
             {
                 if (!connection.Connected) { connection.Open(); }
                 connection.Write(Encoding.ASCII.GetBytes(MainLabel.ToString()));
-                sent = MainLabel.ToString();
                 return true;
             }
             catch
             {
-                sent = ""; ;
                 return false;
             }
         }
-        public bool PrintMainLabel(int iCustNum, out string sent)
+        public bool PrintMainLabel(int iCustNum)
         {
-            return PrintMainLabel(printerSettings.MainLeft, printerSettings.MainTop, printerSettings.MainDarkness, iCustNum, out sent);
+            return PrintMainLabel(printerSettings.MainLeft, printerSettings.MainTop, printerSettings.MainDarkness, printerSettings.PrintRate, printerSettings.TearOffset, iCustNum, printerSettings.options);
         }
 
-        public bool SetIndividualLabelFormat(int left, int top, int darkness, out string error)
+        public bool SetIndividualLabelFormat(int left, int top, int darkness, int rate, int tear, out string error)
         {
             StringBuilder label = new StringBuilder();
             label.Append("^XA");
@@ -143,60 +135,19 @@ namespace BarcodePrinter
             label.Append("^LS0");
 
 
-            if (model == "610")
-            {
-                // Print rate 
-                label.Append("^PR6");
-                // Darkness
-                label.Append("~SD").Append(darkness.ToString());
-                // Tear / Cut offset
-                label.Append("~TA-010");
-                // Thermal Transfer
-                label.Append("^MTD");
-                // print mode, T=tear, P=peel, C=cutter
-                if (printerSettings.UseCutter)
-                    label.Append("^MMC");
-                else
-                    label.Append("^MMT");
-            }
-            else if (model == "220")
-            {
-                label.Append("^PR1");
-                label.Append("~SD").Append(darkness.ToString());
-                label.Append("~TA-010");
-                label.Append("^MTD");
-                label.Append("^MMP");
-            }
-            else if (model == "420")
-            {
-                label.Append("^PR1");
-                label.Append("~SD").Append(darkness.ToString());
-                label.Append("~TA020");
-                label.Append("^MTD");
-                label.Append("^MMP");
-            }
-            else if (model == "410")
-            {
-                label.Append("^PR1");
-                label.Append("~SD").Append(darkness.ToString());
-                label.Append("~TA020");
-                label.Append("^MTD");
-                label.Append("^MMT");
-            }
-            //if (model == "610")
-            //{
-            //    //fo x, y, justification (0,1,2)
-            //    //bx orientation, height, quality, columns, rows
-            //    MainLabel.Append("^FO60,50,0 ^BXN,10,200,14,14 ^FN1^FS ");
-            //    //a font orientation, character height (dots), width(dots)
-            //    //fb width (dots), numlines, add or delete space, justification, hanging indent
-            //    MainLabel.Append("^FO30,250,0 ^A0N,45,0 ^FB550,1,0,C ^FN2^FS ");
-            //} else
-            //{
+            // Print rate 
+            label.Append("^PR").Append(rate);
+            // Darkness
+            label.Append("~SD").Append(darkness.ToString());
+            // Tear / Cut offset
+            label.Append("~TA").Append(string.Format("{0:000}", tear));
+            // Thermal Transfer
+            label.Append("^MTD");
             
+            //x, y position
             label.Append("^FO").Append(left.ToString()).Append(",").Append(top.ToString()).Append(",0 ^BXN,6,200,14,14 ^FN1^FS ");
             label.Append("^FO").Append(left.ToString()).Append(",").Append((top + 100).ToString()).Append(",0 ^A0N,30,0 ^FB400,1,0,L ^FN2^FS ");
-            //}
+            
             label.Append("^XZ");
             try
             {
@@ -213,10 +164,10 @@ namespace BarcodePrinter
             }
             
         }
-        public bool PrintIndividualLabels(int left, int top, int darkness, string barcode, bool cut, out string error)
+        public bool PrintIndividualLabels(int left, int top, int darkness, int rate, int tear, string barcode, out string error, PrintOptions opt, bool lastLabel = false)
         {
             if (!labelFormatSet)
-                if (!SetIndividualLabelFormat(left, top, darkness, out error))
+                if (!SetIndividualLabelFormat(left, top, darkness, rate, tear, out error))
                     return false;
                 else
                     error = "";
@@ -266,8 +217,15 @@ namespace BarcodePrinter
                     individualLabel.AppendLine("^XFR:LABEL.ZPL^FS");
                     individualLabel.Append("^FN1^FD").Append(sNumOnly).AppendLine("^FS");
                     individualLabel.Append("^FN2^FD").Append(sNumWDashes).AppendLine("^FS");
-                    if (cut)
+                    // print mode, T=tear, P=peel, C=cutter
+                    if (opt == PrintOptions.Label)
                         individualLabel.Append("^MMC");
+                    else if (opt == PrintOptions.End && lastLabel)
+                        individualLabel.Append("^MMC");
+                    else if (opt == PrintOptions.Peel)
+                        individualLabel.Append("^MMP");
+                    else
+                        individualLabel.Append("^MMT");
                     individualLabel.AppendLine("^XZ");
                     try { connection.Write(Encoding.ASCII.GetBytes(individualLabel.ToString())); return true; }
                     catch (Exception e)
@@ -283,19 +241,23 @@ namespace BarcodePrinter
             }
             return false;
         }
-        public bool PrintIndividualLabels(string barcode, bool cut, out string error)
+        public bool PrintIndividualLabels(string barcode, out string error, bool lastBarcode = false)
         {
            return PrintIndividualLabels(
                printerSettings.IndividualLeft, 
                printerSettings.IndividualTop, 
                printerSettings.IndividualDarkness, 
+               printerSettings.PrintRate,
+               printerSettings.TearOffset,
                barcode, 
-               cut, 
-               out error);
+               out error,
+               printerSettings.options,
+               lastBarcode
+               );
         }
         public bool PrintTestLabel(out string error)
         {
-            return PrintIndividualLabels("1234123456", false, out error);
+            return PrintIndividualLabels("1234123456", out error);
         }
     }
 }
