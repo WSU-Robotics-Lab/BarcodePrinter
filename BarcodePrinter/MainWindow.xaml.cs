@@ -311,7 +311,7 @@ namespace BarcodePrinter
             var start = await APIAccessor.LabelAccessor.GetPrintLabelAsync(SelectedClient.Code.Substring(1));
             iStartNum = int.Parse(start.Substring(4));
 
-            string confirm = string.Format("{0} labels will be printed for {1}. This will start at {2} and go to {3}. Is this correct?", iNumLabels, SelectedClient.Code, iStartNum, iStartNum + iNumLabels - 1);
+            string confirm = string.Format("{0} labels will be printed for {1}. This will start at {2} and go through {3}. Is this correct?", iNumLabels, SelectedClient.Code, iStartNum, iStartNum + iNumLabels - 1);
             var res = MessageBox.Show(confirm, "Confirm Printing", MessageBoxButton.YesNo);
             if (res != MessageBoxResult.Yes) return;
 
@@ -321,7 +321,7 @@ namespace BarcodePrinter
                 jobs.Enqueue(new PrintJob(Printer, settings));
             }
                         
-            if (jobs.Peek().PrintMainLabel(iCustNum))
+            if (true)//jobs.Peek().PrintMainLabel(iCustNum))
             {
                 txtStatus.Text = "Main Label Printed"; txtStatus.Refresh();
             }
@@ -332,8 +332,9 @@ namespace BarcodePrinter
                 var p = jobs.Dequeue();
 
                 //printing
+                string error = "";
                 string barcode = await APIAccessor.LabelAccessor.GetPrintLabelAsync(SelectedClient.Code.Substring(1), true);
-                if (p.PrintIndividualLabels(barcode, out string error))
+                if (true)//p.PrintIndividualLabels(barcode, out string error))
                 {
                     txtStatus.Text = "Printing Label: " + barcode.ToString();
                     txtStatus.Refresh();
@@ -584,6 +585,10 @@ namespace BarcodePrinter
 
                     if (s.ToUpper().Contains("STARTNUM") || s.ToUpper().Contains("ALL"))
                     {
+                        if (iStartNum == -1)
+                        {
+                            iStartNum = await APIAccessor.BarcodeAccessor.GetLastBarcodeAsync(selectedCustomer.CustomerID);
+                        }
                         await AddLabel();
                         s = await APIAccessor.LabelAccessor.GetPrintLabelAsync(SelectedClient.Code.Substring(1));
                     }

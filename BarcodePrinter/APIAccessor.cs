@@ -125,9 +125,10 @@ namespace BarcodePrinter
         public static class BarcodeAccessor
         {
             public static string url = AllRoutes.BarcodeRoutes.FullURL;
-            public static async Task<Barcode> GetLastBarcodeAsync(int custID)
+
+            public static async Task<int> GetLastBarcodeAsync(int custID)
             {
-                return await Get<Barcode>(url + Queries.CustomerID + custID);
+                return await Get<int>(url + "lastnum" + custID);
             }
 
             public static async Task<List<Barcode>> GetAllBarcodesAsync()
@@ -140,10 +141,10 @@ namespace BarcodePrinter
                 return await Get<Barcode>(url, barcodeID);
             }
 
-            public static async Task<int> GetLastNum(int customerID)
-            {
-                return await Get<int>(url + "lastnum" + customerID.ToString());
-            }
+            //public static async Task<int> GetLastNum(int customerID)
+            //{
+            //    return await Get<int>(url + "lastnum" + customerID.ToString());
+            //}
         }
 
         public static class CustomerAccessor
