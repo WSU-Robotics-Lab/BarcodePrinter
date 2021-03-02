@@ -58,38 +58,22 @@ namespace BarcodePrinter
             settings = new PrinterSettings(PrintJob.PrintOptions.End);
 
             dbCommands = new Repository();
+        }
 
+        private async void Window_Loaded(object sender, RoutedEventArgs e)
+        {
             //read in customers and add to grid
             APIAccessor.SetAuth(Environment.UserName, "pass");
+            APIPrinters = await APIAccessor.PrintersAccessor.GetAllPrintersAsync();
 
-            //TODO: remove after debugging
-            test();
-            //TODO: remove after debugging
             try
-            {   
+            {
                 GetClinics();//doesn't work from NIAR
             }
             catch
             {
                 GetCustomers();
             }
-        }
-
-        private async void Window_Loaded(object sender, RoutedEventArgs e)
-        {
-           APIPrinters = await APIAccessor.PrintersAccessor.GetAllPrintersAsync();
-        }
-
-        private async void test()
-        {
-            //set user authorization
-
-            //TODO: remove after debugging
-            APIAccessor.SetAuth("b333m439", "pass");
-            //TODO: remove after debugging
-
-                    
-            var p = new List<PrintJob>(); 
         }
 
         #region printer connections
@@ -316,12 +300,14 @@ namespace BarcodePrinter
             {
                 iCustNum = int.Parse(SelectedClient.Code.Substring(1));
             }
-            if (!await SetStartNum())
-            {
-                AddLabel();
-            }
-            Thread.Sleep(500);
 
+            await SetStartNum();
+            
+            if (iStartNum == -1)
+            {
+                return;
+            }
+            
             var start = await APIAccessor.LabelAccessor.GetPrintLabelAsync(SelectedClient.Code.Substring(1));
             iStartNum = int.Parse(start.Substring(4));
 
@@ -360,6 +346,7 @@ namespace BarcodePrinter
 
                 jobs.Enqueue(p);
             }
+            iStartNum = -1;
         }
 
         private void rdoPrinter_Checked(object sender, RoutedEventArgs e)
@@ -594,16 +581,21 @@ namespace BarcodePrinter
                 if (string.IsNullOrEmpty(popTxtStartNum.Text))
                 {
                     var s = await APIAccessor.LabelAccessor.GetPrintLabelAsync(SelectedClient.Code.Substring(1));
+
                     if (s.ToUpper().Contains("STARTNUM") || s.ToUpper().Contains("ALL"))
                     {
-                        return false;
+                        await AddLabel();
+                        s = await APIAccessor.LabelAccessor.GetPrintLabelAsync(SelectedClient.Code.Substring(1));
                     }
                     
                     iStartNum = int.Parse(s.Substring(4));
                 }
 
                 else
+                {
                     iStartNum = int.Parse(popTxtStartNum.Text);
+                    popTxtStartNum.Text = "";
+                }
                 return true;
             }
         }
@@ -629,12 +621,12 @@ namespace BarcodePrinter
             }
         }
 
-        private void popBtnStartNum_Click(object sender, RoutedEventArgs e)
+        private async void popBtnStartNum_Click(object sender, RoutedEventArgs e)
         {
             if (int.TryParse(popTxtStartNum.Text, out iStartNum) && iStartNum > -1)
             {
                 popStart.IsOpen = false;
-                AddLabel();
+                await AddLabel();
             }
             else
             {
@@ -642,12 +634,11 @@ namespace BarcodePrinter
             }
         }
 
-        private async void AddLabel()
+        private async Task AddLabel()
         {
             if (int.TryParse(txtNumLabels.Text, out int numLabels))
             {
                 var res = await APIAccessor.LabelAccessor.PostCreateLabel(new API_Lib.Models.ProcedureModels.InputModels.CreateLabelInput(SelectedClient.Code, SelectedClient.Name, iStartNum, numLabels));
-                
             }
             else
             {
@@ -657,7 +648,7 @@ namespace BarcodePrinter
 
         private void ckOptions_Checked(object sender, RoutedEventArgs e)
         {
-            var box = sender as CheckBox;
+            var box = sender as RadioButton;
             if (box.Name.ToUpper().Contains("CUTPERLABEL"))
             {
                 settings.options = PrintJob.PrintOptions.Label;

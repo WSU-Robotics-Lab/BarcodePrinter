@@ -90,11 +90,11 @@ namespace BarcodePrinter
             
         }
         //todo: test Delete requests
-        private static async Task<bool> Delete(string url)
-        {
-            var res = await client.DeleteAsync(url);
-            return res.IsSuccessStatusCode;
-        }
+        //private static async Task<bool> Delete(string url)
+        //{
+        //    var res = await client.DeleteAsync(url);
+        //    return res.IsSuccessStatusCode;
+        //}
         
         #endregion
 
