@@ -13,7 +13,8 @@ namespace BarcodePrinter
         {
             End,
             Label,
-            Peel
+            Peel,
+            Tear
         }
 
         public string Model { get; set; }
