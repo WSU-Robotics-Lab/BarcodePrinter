@@ -191,7 +191,8 @@ namespace BarcodePrinter
             /// <returns></returns>
             public static async Task<string> GetPrintLabelAsync(string id, bool print = false)
             {
-                return await Get<string>(url + "print" + id + Queries.Print + print.ToString());
+                var route = string.Format(url + Queries.PrintLabel + id + Queries.Print + print.ToString());
+                return await Get<string>(route);
             }
 
             /// <summary>
@@ -201,7 +202,7 @@ namespace BarcodePrinter
             /// <returns>primary keys for the created label and barcode</returns>
             public static async Task<CreateLabelOutput> PostCreateLabel(CreateLabelInput input)
             {
-                return await Post<CreateLabelInput, CreateLabelOutput>(url + "create", input) as CreateLabelOutput;
+                return await Post<CreateLabelInput, CreateLabelOutput>(url + Queries.CreateLabel, input) as CreateLabelOutput;
             }
         }
 
@@ -223,7 +224,8 @@ namespace BarcodePrinter
             /// <returns>the last barcode that was added to the barcode table for the given customerid</returns>
             public static async Task<int> GetLastBarcodeAsync(int custID)
             {
-                return await Get<int>(url + "lastnum" + custID);
+                string route = url + Queries.LastBarcode + custID;
+                return await Get<int>(route);
             }
 
             /// <summary>
@@ -283,7 +285,8 @@ namespace BarcodePrinter
             /// <returns>true if customer exists</returns>
             public static async Task<bool> GetCustomerExistsAsync(string id)
             {
-                return await Get<bool>(url + id + AllRoutes.Exists);
+                string route = url + id + AllRoutes.Exists;
+                return await Get<bool>(route);
             }
         }
 
