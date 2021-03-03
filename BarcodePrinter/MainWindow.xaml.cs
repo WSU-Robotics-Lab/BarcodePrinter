@@ -662,7 +662,10 @@ namespace BarcodePrinter
         /// <returns></returns>
         private bool IsLastNum(string barcode)
         {
-            int num = int.Parse(barcode.Substring(4));//parse the int
+            if (!int.TryParse(barcode.Substring(4), out int num))//parse the int
+            {
+                return true;//we're at the end of the printing
+            }
             return num == (iStartNum + int.Parse(txtNumLabels.Text) - 1);//compare to startnum + quantity
         }
         
