@@ -36,7 +36,6 @@ namespace BarcodePrinter
             {
                 Identifier = conn.SimpleConnectionName.Split('.')[0];
             }
-            
         }
         
         ~PrintJob()
@@ -285,7 +284,10 @@ namespace BarcodePrinter
                     individualLabel.AppendLine("^XZ");
                     
                     //send command, if successful, return true
-                    try { connection.Write(Encoding.ASCII.GetBytes(individualLabel.ToString())); return true; }
+                    try { 
+                        connection.Write(Encoding.ASCII.GetBytes(individualLabel.ToString())); 
+                        return true; 
+                    }
                     catch (Exception e)
                     {
                         if (attempts == 10)//stop trying
