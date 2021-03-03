@@ -11,11 +11,9 @@
 
 using API_Lib.Models;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -62,7 +60,7 @@ namespace BarcodePrinter
         }
 
         /// <summary>
-        /// set authentication to current username
+        /// set authentication to logged in user
         /// fill up client grid
         /// </summary>
         /// <param name="sender"></param>
@@ -589,7 +587,7 @@ namespace BarcodePrinter
                 individualLabel.AppendLine("~JA");
                 individualLabel.AppendLine("^XZ");
 
-                txtStatus.Text = "Sending Cancel" + System.Environment.NewLine + txtStatus.Text;
+                txtStatus.Text = "Sending Cancel";
                 txtStatus.Refresh();
                 Printer.Write(Encoding.ASCII.GetBytes(individualLabel.ToString()));
             }

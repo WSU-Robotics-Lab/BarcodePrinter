@@ -7,25 +7,28 @@ using static BarcodePrinter.PrintJob;
 
 namespace BarcodePrinter
 {
+    /// <summary>
+    /// Print settings for barcode printer
+    /// </summary>
     public class PrinterSettings
     {
-        LabelSettings mainLabel;
-        LabelSettings individualLabel;
-        public PrintOptions options;
+        LabelSettings mainLabel;//CUST 1234
+        LabelSettings individualLabel;//1234-000-123456
+        public PrintOptions options;//tear, peel, cut at end, cut each label
         public int PrintRate;
         public int TearOffset;
+
         public PrinterSettings(PrintOptions options = PrintOptions.End)
         {
             mainLabel = new LabelSettings();
-            individualLabel = new LabelSettings(60, 50, 16);
+            individualLabel = new LabelSettings(150, 50, 16);
             this.options = options;
             PrintRate = 1;
             TearOffset = -20;
         }
 
-        public PrinterSettings(PrintOptions options = PrintOptions.End, int mainLeft = 15, int mainTop = 60, int mainDarkness = 16, int indLeft = 15, int indTop = 40, int indDark = 16, int rate = 1, int tear = -20)
+        public PrinterSettings(PrintOptions options = PrintOptions.End, int mainLeft = 150, int mainTop = 50, int mainDarkness = 16, int indLeft = 150, int indTop = 40, int indDark = 16, int rate = 1, int tear = -20)
         {
-
             individualLabel = new LabelSettings(indLeft, indTop, indDark);
             mainLabel = new LabelSettings(mainLeft, mainTop, mainDarkness);
             this.options = options;

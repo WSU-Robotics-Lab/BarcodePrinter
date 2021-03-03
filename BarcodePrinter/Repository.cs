@@ -1,14 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Transactions;
-using System.Windows;
 using Oracle.ManagedDataAccess.Client;
-using API_Lib.Models;
-
 
 namespace BarcodePrinter
 {
@@ -18,13 +11,7 @@ namespace BarcodePrinter
         string MDLConnect = "Data Source=dbsvc-325.ad.wichita.edu;User ID=MDLwebService;Password=tZgGDZ4{8Q{k9w;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
         string oracleConnect = "Data Source=(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = ociwsudb1.oraclevcn.mdl.wichita.edu)(PORT = 1521)) (CONNECT_DATA = (SERVER = DEDICATED) (SERVICE_NAME = odbc.wsu)));  User ID=sccodbc; Password=eoSRJJ36";
 
-        /// <summary>
-        /// Take in the badge information and get the user's information from that.
-        /// </summary>
-        /// <param name="badge">Badge value</param>
-        /// <returns>A 'User' class that contains the information of the user (ID, name, username, role)</returns>
-        
-        public ConnectionState CheckMDLConnection() {
+       public ConnectionState CheckMDLConnection() {
             using (var connection = new SqlConnection(MDLConnect)) {
                 return connection.State;
             }

@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace BarcodePrinter
 {
+    /// <summary>
+    /// for tracking label positions and density
+    /// </summary>
     public class LabelSettings
     {
         int _left;
@@ -30,7 +33,7 @@ namespace BarcodePrinter
         }
         #endregion
 
-        public LabelSettings(int left = 60, int top = 50, int darkness = 16)
+        public LabelSettings(int left = 150, int top = 50, int darkness = 16)
         {
             _left = left;
             _top = top;

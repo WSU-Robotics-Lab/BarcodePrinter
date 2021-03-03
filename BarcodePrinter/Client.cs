@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace BarcodePrinter
 {
+    //for Client object from Oracle db
     public class Client
     {
         public string Name { get; set; }
