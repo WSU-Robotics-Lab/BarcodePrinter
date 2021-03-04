@@ -72,7 +72,7 @@ namespace BarcodePrinter
             APIAccessor.SetAuth("b333m439", "");
             //APIAccessor.SetAuth(Environment.UserName, "pass");
             APIPrinters = await APIAccessor.PrintersAccessor.GetAllPrintersAsync();
-
+            
             //fill the grid with customers
             try
             {//from oracle
@@ -557,11 +557,12 @@ namespace BarcodePrinter
                 var p = jobs.Dequeue();//get the front job
 
                 //printing
-                string barcode = await APIAccessor.LabelAccessor.GetPrintLabelAsync(SelectedClient.Code.Substring(1), true);
+                string barcode = await APIAccessor.LabelAccessor.GetPrintLabelAsync(SelectedClient.Code.Substring(1));
                 
-                if (barcode == "All Printed")
-                {
-                    int test = 0;
+                if (barcode.ToUpper().Contains("ALL") && i < iNumLabels)
+                {//we need to add the rest of the barcodes, to make up for an error
+                    var r = await APIAccessor.LabelAccessor.PostCreateLabel(new API_Lib.Models.ProcedureModels.InputModels.CreateLabelInput(SelectedClient.Code.Substring(1), SelectedClient.Name, iStartNum + i, iNumLabels - i));
+                    barcode = await APIAccessor.LabelAccessor.GetPrintLabelAsync(SelectedClient.Code.Substring(1));//update barcode
                 }
 
                 bool printed = false;
@@ -579,10 +580,12 @@ namespace BarcodePrinter
                 {
                     txtStatus.Text = "Printing Label: " + barcode.ToString();
                     txtStatus.Refresh();
+                    barcode = await APIAccessor.LabelAccessor.GetPrintLabelAsync(SelectedClient.Code.Substring(1), true);
                 }
                 else//otherwise show the error
                 {
-                    MessageBox.Show(error);
+                    MessageBox.Show(error + "\n Number of Labels updated. Press Print to reattempt");
+                    txtNumLabels.Text = (iNumLabels - i).ToString();
                     break;
                 }
 
@@ -783,6 +786,15 @@ namespace BarcodePrinter
         {
             if (int.TryParse(txtNumLabels.Text, out int numLabels))//make sure entered quantity is valid
             {//push client code, name, starting number, and number of labels to db
+                if (selectedCustomer != null)
+                {
+                    int lastNum = await APIAccessor.BarcodeAccessor.GetLastBarcodeAsync(selectedCustomer.CustomerID);
+                    if (lastNum != iStartNum)
+                    {
+                        numLabels -= (lastNum - iStartNum);
+                    }
+                }
+
                 var res = await APIAccessor.LabelAccessor.PostCreateLabel(new API_Lib.Models.ProcedureModels.InputModels.CreateLabelInput(SelectedClient.Code, SelectedClient.Name, iStartNum, numLabels));
             }
             else//inform user of invalid value in numlabels

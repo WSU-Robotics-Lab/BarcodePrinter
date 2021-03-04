@@ -133,7 +133,7 @@ namespace BarcodePrinter
             try//try to send the label
             {
                 if (!connection.Connected) { connection.Open(); }
-                connection.Write(Encoding.ASCII.GetBytes(MainLabel.ToString()));
+                //connection.Write(Encoding.ASCII.GetBytes(MainLabel.ToString()));
                 return true;
             }
             catch
@@ -286,7 +286,7 @@ namespace BarcodePrinter
                     
                     //send command, if successful, return true
                     try { 
-                        connection.Write(Encoding.ASCII.GetBytes(individualLabel.ToString())); 
+                        //connection.Write(Encoding.ASCII.GetBytes(individualLabel.ToString())); 
                         return true; 
                     }
                     catch (Exception e)
