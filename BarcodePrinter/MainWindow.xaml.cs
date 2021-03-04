@@ -524,16 +524,6 @@ namespace BarcodePrinter
             var res = MessageBox.Show(confirm, "Confirm Printing", MessageBoxButton.YesNo);
             if (res != MessageBoxResult.Yes) return;//if no, then cancel
 
-            rdo220A.IsEnabled = false;
-            rdo220B.IsEnabled = false;
-            rdo610.IsEnabled = false;
-            rdoUSB.IsEnabled = false;
-            btnSettings220A.IsEnabled = false;
-            btnSettings220B.IsEnabled = false;
-            btnSettings610.IsEnabled = false;
-            btnSettingsUSB.IsEnabled = false;
-            btnExit.IsEnabled = false;
-
             //for printing on multiple printers
             Queue<PrintJob> jobs = new Queue<PrintJob>();
             foreach (Zebra.Sdk.Comm.ConnectionA Printer in _PrinterConnections)//loop through connections
@@ -551,6 +541,16 @@ namespace BarcodePrinter
                 return;
             }
 
+            rdo220A.IsEnabled = false;
+            rdo220B.IsEnabled = false;
+            rdo610.IsEnabled = false;
+            rdoUSB.IsEnabled = false;
+            btnSettings220A.IsEnabled = false;
+            btnSettings220B.IsEnabled = false;
+            btnSettings610.IsEnabled = false;
+            btnSettingsUSB.IsEnabled = false;
+            btnExit.IsEnabled = false;
+
             //TODO: queues need testing on location
             for (int i = 0; i < iNumLabels; i++)//loop through all labels
             {
@@ -558,6 +558,12 @@ namespace BarcodePrinter
 
                 //printing
                 string barcode = await APIAccessor.LabelAccessor.GetPrintLabelAsync(SelectedClient.Code.Substring(1), true);
+                
+                if (barcode == "All Printed")
+                {
+                    int test = 0;
+                }
+
                 bool printed = false;
                 string error = "";
                 if (!IsLastNum(barcode))//if this is NOT the last barcode
@@ -688,6 +694,7 @@ namespace BarcodePrinter
             {
                 return true;//we're at the end of the printing
             }
+
             return num == (iStartNum + int.Parse(txtNumLabels.Text) - 1);//compare to startnum + quantity
         }
         
