@@ -118,7 +118,7 @@ namespace BarcodePrinter
                 MainLabel.Append("^MMC");
             else if (opt == PrintOptions.Peel)
                 MainLabel.Append("^MMP");
-            else
+            else if (opt == PrintOptions.Tear)
                 MainLabel.Append("^MMT");
             
             //fo x, y, justification (0,1,2)
@@ -133,7 +133,7 @@ namespace BarcodePrinter
             try//try to send the label
             {
                 if (!connection.Connected) { connection.Open(); }
-                connection.Write(Encoding.ASCII.GetBytes(MainLabel.ToString()));
+                //connection.Write(Encoding.ASCII.GetBytes(MainLabel.ToString()));
                 return true;
             }
             catch
@@ -279,13 +279,14 @@ namespace BarcodePrinter
                         individualLabel.Append("^MMC");
                     else if (opt == PrintOptions.Peel)
                         individualLabel.Append("^MMP");
-                    else
+                    else if (opt == PrintOptions.Tear)
                         individualLabel.Append("^MMT");
+
                     individualLabel.AppendLine("^XZ");
                     
                     //send command, if successful, return true
                     try { 
-                        connection.Write(Encoding.ASCII.GetBytes(individualLabel.ToString())); 
+                        //connection.Write(Encoding.ASCII.GetBytes(individualLabel.ToString())); 
                         return true; 
                     }
                     catch (Exception e)
