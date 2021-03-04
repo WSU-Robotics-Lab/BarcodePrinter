@@ -841,15 +841,51 @@ namespace BarcodePrinter
 
             //copy value to correct setting
             if (txb.Name.ToUpper().Contains("LEFT"))
+            {
+                if (res < 0 || res > 406)
+                {
+                    MessageBox.Show("Left offset must be between 0 and 406");
+                    return;
+                }
                 settings.IndividualLeft = res;
+            }
             else if (txb.Name.ToUpper().Contains("TOP"))
+            {
+                if (res < 0 || res > 210)
+                {
+                    MessageBox.Show("Top offset must be between 0 and 203");
+                    return;
+                }
                 settings.IndividualTop = res;
+            }
             else if (txb.Name.ToUpper().Contains("TEAR"))
+            {
+                if (res < -120 || res > 120)
+                {
+                    MessageBox.Show("Tear offset must be between -120 and 120");
+                    return;
+                }
                 settings.TearOffset = res;
+            }
             else if (txb.Name.ToUpper().Contains("RATE"))
+            {
+                if (res < 1 || res > 14)
+                {
+                    MessageBox.Show("Print Rate must be between 1 and 14");
+                    return;
+                }
                 settings.PrintRate = res;
-            else
+            }
+            else if (txb.Name.ToUpper().Contains("DARKNESS"))
+            {
+                if (res < 0 || res > 30)
+                {
+                    MessageBox.Show("Darkness must be between 0 and 30");
+                    return;
+                }
                 settings.IndividualDarkness = res;
+            }
+            
         }
 
         /// <summary>

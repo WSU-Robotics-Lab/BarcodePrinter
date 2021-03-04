@@ -75,9 +75,9 @@
                                 <Button x:Name="popBtnSave" Grid.Row="7" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Content="Save" Click="popBtnSave_Click"/>
 
                                 <Label x:Name="popTearLbl" Grid.Row="1" Grid.Column="1" Content="Tear/Cut Offset:"/>
-                                <TextBox x:Name="popTear" Grid.Row="2" Grid.Column="1" LostFocus="UxSettings_LostFocus"/>
+                                <TextBox x:Name="popTear" Grid.Row="2" Grid.Column="1" LostFocus="UxSettings_LostFocus" GotFocus="UxSettings_GotFocus"/>
                                 <Label x:Name="popRateLbl" Grid.Row="3" Grid.Column="1" Content="Print Rate:"/>
-                                <TextBox x:Name="popRate" Grid.Row="4" Grid.Column="1" LostFocus="UxSettings_LostFocus"/>
+                                <TextBox x:Name="popRate" Grid.Row="4" Grid.Column="1" LostFocus="UxSettings_LostFocus" GotFocus="UxSettings_GotFocus"/>
                                 
                             </Grid>
                         </Viewbox>
