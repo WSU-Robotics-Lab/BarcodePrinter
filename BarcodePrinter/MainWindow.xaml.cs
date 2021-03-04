@@ -120,7 +120,10 @@ namespace BarcodePrinter
                 //disable cutter
                 ckCutAtEnd.IsEnabled = false;
                 ckCutPerLabel.IsEnabled = false;
-
+                if ((bool)ckCutAtEnd.IsChecked || (bool)ckCutPerLabel.IsChecked)
+                {
+                    ckTear.IsChecked = true;
+                }
             }
 
             //update ui
@@ -521,6 +524,15 @@ namespace BarcodePrinter
             var res = MessageBox.Show(confirm, "Confirm Printing", MessageBoxButton.YesNo);
             if (res != MessageBoxResult.Yes) return;//if no, then cancel
 
+            rdo220A.IsEnabled = false;
+            rdo220B.IsEnabled = false;
+            rdo610.IsEnabled = false;
+            rdoUSB.IsEnabled = false;
+            btnSettings220A.IsEnabled = false;
+            btnSettings220B.IsEnabled = false;
+            btnSettings610.IsEnabled = false;
+            btnSettingsUSB.IsEnabled = false;
+            btnExit.IsEnabled = false;
 
             //for printing on multiple printers
             Queue<PrintJob> jobs = new Queue<PrintJob>();
@@ -570,7 +582,17 @@ namespace BarcodePrinter
 
                 jobs.Enqueue(p);//put the job on the back
             }
+
             iStartNum = -1;//reset the start number
+            rdo220A.IsEnabled = true;
+            rdo220B.IsEnabled = true;
+            rdo610.IsEnabled = true;
+            rdoUSB.IsEnabled = true;
+            btnSettings220A.IsEnabled = true;
+            btnSettings220B.IsEnabled = true;
+            btnSettings610.IsEnabled = true;
+            btnSettingsUSB.IsEnabled = true;
+            btnExit.IsEnabled = true;
         }
 
         /// <summary>
