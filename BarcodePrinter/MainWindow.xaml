@@ -78,7 +78,9 @@
                                 <TextBox x:Name="popTear" Grid.Row="2" Grid.Column="1" LostFocus="UxSettings_LostFocus" GotFocus="UxSettings_GotFocus"/>
                                 <Label x:Name="popRateLbl" Grid.Row="3" Grid.Column="1" Content="Print Rate:"/>
                                 <TextBox x:Name="popRate" Grid.Row="4" Grid.Column="1" LostFocus="UxSettings_LostFocus" GotFocus="UxSettings_GotFocus"/>
-                                
+
+                                <CheckBox x:Name="popCkRotate" VerticalAlignment="Center" HorizontalAlignment="Center" Grid.Row="5" Grid.RowSpan="2" Grid.Column="1" Content="Rotate 90" IsChecked="False" Checked="popCkRotate_Checked" Unchecked="popCkRotate_Checked"/>
+
                             </Grid>
                         </Viewbox>
                     </Popup>

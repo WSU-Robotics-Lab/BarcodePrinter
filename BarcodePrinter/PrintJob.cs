@@ -1,4 +1,7 @@
-﻿using System;
+﻿#define DEBUG
+#undef DEBUG
+
+using System;
 using System.Linq;
 using System.Text;
 
@@ -120,20 +123,42 @@ namespace BarcodePrinter
                 MainLabel.Append("^MMP");
             else if (opt == PrintOptions.Tear)
                 MainLabel.Append("^MMT");
-            
+
             //fo x, y, justification (0,1,2)
             //bx orientation, height, quality, columns, rows
             //a font orientation, character height (dots), width(dots)
+            //orientation: N - Normal, R - Rotated clockwise 90, I - rotated 180, B - read from bottom up, 270
             //fb width (dots), numlines, add or delete space, justification, hanging indent
-            MainLabel.Append("^FO").Append(left.ToString()).Append(",").Append(top.ToString()).Append(",0 ^BXN,6,200,18,18 ^FD" + iCustNum.ToString() + " ^FS");//barcode
-            MainLabel.Append("^FO").Append(left.ToString()).Append(",").Append(top.ToString()).Append(",0 ^A0N,60,0 ^FB400,1,0,C ^FD CUST ^FS");//CUST
-            MainLabel.Append("^FO").Append(left.ToString()).Append(",").Append((top + 50).ToString()).Append(",0 ^A0N,60,0 ^FB400,1,0,C ^FD" + iCustNum.ToString() + " ^FS");//####
+            string rotation = "N";
+            int actualLeft = left;
+            int actualTop = top;
+            int custLeft = left;
+            int custTop = top;
+            int numLeft = left;
+            int numTop = top + 50;
+            if (printerSettings.Rotate)
+            {
+                rotation = "R";//rotate 90
+                //change left and top offsets
+                actualTop = left - 100;
+                actualLeft = 303 - top;
+                custTop = actualTop;
+                custLeft = actualLeft + 50;
+                numLeft = actualLeft;
+                numTop = actualTop - 15;
+            }
+
+            MainLabel.Append("^FO").Append(actualLeft.ToString()).Append(",").Append(actualTop.ToString()).Append(",0 ^BX").Append(rotation + ",").Append("6,200,18,18 ^FD" + iCustNum.ToString() + " ^FS");//barcode
+            MainLabel.Append("^FO").Append(custLeft.ToString()).Append(",").Append(custTop.ToString()).Append(",0 ^A0").Append(rotation + ",").Append("60,0 ^FB400,1,0,C ^FD CUST ^FS");//CUST
+            MainLabel.Append("^FO").Append(numLeft.ToString()).Append(",").Append(numTop.ToString()).Append(",0 ^A0").Append(rotation + ",").Append("60,0 ^FB400,1,0,C ^FD" + iCustNum.ToString() + " ^FS");//####
             MainLabel.Append("^XZ");
 
             try//try to send the label
             {
                 if (!connection.Connected) { connection.Open(); }
+            #if (!DEBUG)
                 connection.Write(Encoding.ASCII.GetBytes(MainLabel.ToString()));
+            #endif
                 return true;
             }
             catch
@@ -179,10 +204,25 @@ namespace BarcodePrinter
             label.Append("~TA").Append(string.Format("{0:000}", tear));
             // Thermal Transfer
             label.Append("^MTD");
-            
+
+            string rotation = "N";
+            int actualLeft = left;
+            int actualTop = top;
+            int numLeft = left;
+            int numTop = top + 100;
+            if (printerSettings.Rotate)
+            {
+                rotation = "R";//rotate 90
+                //change left and top offsets
+                actualTop = left - 100;
+                actualLeft = 333 - top;
+                numTop = actualTop;
+                numLeft = actualLeft - 50;
+            }
+
             //x, y position
-            label.Append("^FO").Append(left.ToString()).Append(",").Append(top.ToString()).Append(",0 ^BXN,6,200,14,14 ^FN1^FS ");
-            label.Append("^FO").Append(left.ToString()).Append(",").Append((top + 100).ToString()).Append(",0 ^A0N,30,0 ^FB400,1,0,L ^FN2^FS ");
+            label.Append("^FO").Append(actualLeft.ToString()).Append(",").Append(actualTop.ToString()).Append(",0 ^BX").Append(rotation + ",").Append("6,200,14,14 ^FN1^FS ");
+            label.Append("^FO").Append(numLeft.ToString()).Append(",").Append(numTop.ToString()).Append(",0 ^A0").Append(rotation + ",").Append("30,0 ^FB400,1,0,L ^FN2^FS ");
             label.Append("^XZ");
 
             try//attempt connection
@@ -285,8 +325,10 @@ namespace BarcodePrinter
                     individualLabel.AppendLine("^XZ");
                     
                     //send command, if successful, return true
-                    try { 
+                    try {
+                    #if !DEBUG
                         connection.Write(Encoding.ASCII.GetBytes(individualLabel.ToString())); 
+                    #endif
                         return true; 
                     }
                     catch (Exception e)

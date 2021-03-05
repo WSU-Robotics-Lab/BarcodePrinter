@@ -268,7 +268,7 @@ namespace BarcodePrinter
                     if (!APIPrinters.Any(x => x.SerialNumber == pj.Identifier))//see if we found this printer in the db
                     {
                         //if not, add printer to db
-                        await APIAccessor.PrintersAccessor.PostPrinterAsync(new API_Lib.Models.Printer(0, pj.Identifier, "USB" + (APIPrinters.Count + 1).ToString(), -10, 150, 60, 1, 16, "MT", 406, 210, null, false, null, pj.Model));
+                        await APIAccessor.PrintersAccessor.PostPrinterAsync(new API_Lib.Models.Printer(0, pj.Identifier, "USB" + (APIPrinters.Count + 1).ToString(), -10, 150, 60, 1, 16, "MT", 406, 210, null, false, null, pj.Model, false));
                         APIPrinters = await APIAccessor.PrintersAccessor.GetAllPrintersAsync();//update list
                     }
                     else
@@ -307,11 +307,12 @@ namespace BarcodePrinter
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void btnSettings_Click(object sender, RoutedEventArgs e)
+        private async void btnSettings_Click(object sender, RoutedEventArgs e)
         {
             var btn = sender as Button;
             
             Printer printer = null;
+            APIPrinters = await APIAccessor.PrintersAccessor.GetAllPrintersAsync();
 
             if (btn.Name.Contains("610"))//show 610 info
             {
@@ -349,6 +350,11 @@ namespace BarcodePrinter
             }
             else if (btn.Name.Contains("USB"))//find usb printer in db
             {
+                if (!(bool)rdoUSB.IsChecked)
+                {
+                    rdoUSB.IsChecked = true;
+                    rdoPrinter_Checked(rdoUSB, new RoutedEventArgs());
+                }
                 if (grdPrinter.SelectedItem == null)//if a printer isn't selected
                 {
                     if (grdPrinter.Items.Count == 1)//if there's only one, then select if
@@ -380,7 +386,12 @@ namespace BarcodePrinter
             }
 
             //show all settings
+            
+            popCkRotate.IsChecked = printer.Rotate90;
             popTxbSelectedPrinter.Text = printer.PrinterName;
+
+            FlipTopAndLeft();
+
             popLeft.Text = printer.LeftOffset.ToString();
             popTop.Text = printer.TopOffset.ToString();
             popDarkness.Text = printer.Density.ToString();
@@ -388,7 +399,6 @@ namespace BarcodePrinter
             popRate.Text = printer.Rate.ToString();
 
             popSettings.IsOpen = !popSettings.IsOpen;//toggle settings popup
-            
         }
 
         /// <summary>
@@ -421,6 +431,7 @@ namespace BarcodePrinter
                 settings.IndividualTop = int.Parse(popTop.Text);
                 settings.PrintRate = int.Parse(popRate.Text);
                 settings.TearOffset = int.Parse(popTear.Text);
+                settings.Rotate = (bool)popCkRotate.IsChecked;
 
                 //print test label 1234-000-00123456
                 PrintJob p = new PrintJob(printer, settings);
@@ -448,6 +459,7 @@ namespace BarcodePrinter
                     p.TopOffset = int.Parse(popTop.Text);
                     p.Rate = int.Parse(popRate.Text);
                     p.TearOffset = int.Parse(popTear.Text);
+                    p.Rotate90 = (bool)popCkRotate.IsChecked;
 
                     //update db values
                     if (await APIAccessor.PrintersAccessor.PostPrinterAsync(p))
@@ -684,6 +696,25 @@ namespace BarcodePrinter
             settings.MainTop = (int)p.TopOffset;
             settings.PrintRate = (int)p.Rate;
             settings.TearOffset = (int)p.TearOffset;
+            settings.Rotate = p.Rotate90;
+        }
+
+        /// <summary>
+        /// change labels depending on rotate 90
+        /// </summary>
+        /// <param name="printer"></param>
+        private void FlipTopAndLeft()
+        {
+            if ((bool)popCkRotate.IsChecked)//flip top and left labels
+            {
+                popLeftLbl.Content = "Top Offset:";
+                popTopLbl.Content = "Left Offset:";
+            }
+            else
+            {
+                popLeftLbl.Content = "Left Offset:";
+                popTopLbl.Content = "Top Offset:";
+            }
         }
 
         /// <summary>
@@ -952,6 +983,17 @@ namespace BarcodePrinter
             {
                 settings.options = PrintJob.PrintOptions.Tear;
             }
+        }
+
+        /// <summary>
+        /// set rotation
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void popCkRotate_Checked(object sender, RoutedEventArgs e)
+        {
+            settings.Rotate = (bool)popCkRotate.IsChecked;
+            FlipTopAndLeft();
         }
 
         #endregion
