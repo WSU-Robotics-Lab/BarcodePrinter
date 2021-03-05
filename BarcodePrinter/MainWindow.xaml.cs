@@ -80,6 +80,7 @@ namespace BarcodePrinter
             }
             catch
             {//from MDL db
+                MessageBox.Show("Unable to retrieve customers from Oracle database.\nShowing previous Customers");
                 GetCustomers();
             }
         }
@@ -542,8 +543,8 @@ namespace BarcodePrinter
             {
                 jobs.Enqueue(new PrintJob(Printer, settings));//add to queue
             }
-
-            if (jobs.Peek().PrintMainLabel(iCustNum))//try to print main label
+            
+            if (jobs.Peek().PrintMainLabel(iCustNum, SelectedClient.Name))//try to print main label
             {
                 txtStatus.Text = "Main Label Printed"; txtStatus.Refresh();
             }
@@ -670,7 +671,7 @@ namespace BarcodePrinter
         {
             foreach (Customer c in await APIAccessor.CustomerAccessor.GetAllCustomersAsync())
             {
-                clients.Add(new Client("No connection", "C" + c.CustomerNumber));//show we don't have oracle connection
+                clients.Add(new Client(c.CustomerName, "C" + c.CustomerNumber));
             }
 
             if (clients.Count == 0)

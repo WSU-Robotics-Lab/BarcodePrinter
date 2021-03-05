@@ -99,7 +99,7 @@ namespace BarcodePrinter
         /// <param name="iCustNum"></param>
         /// <param name="opt"></param>
         /// <returns></returns>
-        private bool PrintMainLabel(int left, int top, int darkness, int rate, int tear, int iCustNum, PrintOptions opt)
+        private bool PrintMainLabel(int left, int top, int darkness, int rate, int tear, int iCustNum, PrintOptions opt, string custName)
         {
             StringBuilder MainLabel = new StringBuilder();
             MainLabel.Append("^XA");
@@ -132,24 +132,24 @@ namespace BarcodePrinter
             string rotation = "N";
             int actualLeft = left;
             int actualTop = top;
-            int custLeft = left;
-            int custTop = top;
-            int numLeft = left;
-            int numTop = top + 50;
+            int custLeft = left + 110;
+            int custTop = top - 10;
+            int numLeft = left + 15;
+            int numTop = top + 80;
             if (printerSettings.Rotate)
             {
                 rotation = "R";//rotate 90
                 //change left and top offsets
                 actualTop = left - 100;
                 actualLeft = 303 - top;
-                custTop = actualTop;
-                custLeft = actualLeft + 50;
-                numLeft = actualLeft;
-                numTop = actualTop - 15;
+                custTop = actualTop + 110;
+                custLeft = actualLeft + 40;
+                numLeft = actualLeft - 25;
+                numTop = actualTop + 20;
             }
 
             MainLabel.Append("^FO").Append(actualLeft.ToString()).Append(",").Append(actualTop.ToString()).Append(",0 ^BX").Append(rotation + ",").Append("6,200,18,18 ^FD" + iCustNum.ToString() + " ^FS");//barcode
-            MainLabel.Append("^FO").Append(custLeft.ToString()).Append(",").Append(custTop.ToString()).Append(",0 ^A0").Append(rotation + ",").Append("60,0 ^FB400,1,0,C ^FD CUST ^FS");//CUST
+            MainLabel.Append("^FO").Append(custLeft.ToString()).Append(",").Append(custTop.ToString()).Append(",0 ^A0").Append(rotation + ",").Append("23,0 ^FB200,4,0,C ^FD").Append(custName).Append(" ^FS");//CUST
             MainLabel.Append("^FO").Append(numLeft.ToString()).Append(",").Append(numTop.ToString()).Append(",0 ^A0").Append(rotation + ",").Append("60,0 ^FB400,1,0,C ^FD" + iCustNum.ToString() + " ^FS");//####
             MainLabel.Append("^XZ");
 
@@ -172,9 +172,9 @@ namespace BarcodePrinter
         /// </summary>
         /// <param name="iCustNum">customer number to be printed on the label</param>
         /// <returns>success or failure</returns>
-        public bool PrintMainLabel(int iCustNum)
+        public bool PrintMainLabel(int iCustNum, string custName)
         {
-            return PrintMainLabel(printerSettings.MainLeft, printerSettings.MainTop, printerSettings.MainDarkness, printerSettings.PrintRate, printerSettings.TearOffset, iCustNum, printerSettings.options);
+            return PrintMainLabel(printerSettings.MainLeft, printerSettings.MainTop, printerSettings.MainDarkness, printerSettings.PrintRate, printerSettings.TearOffset, iCustNum, printerSettings.options, custName);
         }
 
         /// <summary>
