@@ -866,8 +866,7 @@ namespace BarcodePrinter
             if (!Int32.TryParse(txb.Text, out res))
             {
                 MessageBox.Show("Value must be an integer");
-                txb.Text = "";
-                e.Handled = true;
+                txb.Text = "0";
                 return;
             }
 
@@ -877,6 +876,7 @@ namespace BarcodePrinter
                 if (res < 0 || res > 406)
                 {
                     MessageBox.Show("Left offset must be between 0 and 406");
+
                     return;
                 }
                 settings.IndividualLeft = res;
