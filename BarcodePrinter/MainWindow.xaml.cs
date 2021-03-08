@@ -57,18 +57,10 @@ namespace BarcodePrinter
             settings = new PrinterSettings(PrintJob.PrintOptions.End);
             ckTear.IsChecked = true;
             dbCommands = new Repository();
-
-            test();
+            
         }
 
-        void test()
-        {
-            string s = "0433002108";
-
-            var res = string.Format("{0:0000}-{1:000-000}", s.Substring(0, 4), s.Substring(4));
-            var res1 = string.Format("{0:000-000}", s.Substring(4));
-        }
-
+       
         /// <summary>
         /// set authentication to logged in user
         /// fill up client grid
@@ -82,7 +74,8 @@ namespace BarcodePrinter
             APIAccessor.SetAuth("b333m439", "");
             //APIAccessor.SetAuth(Environment.UserName, "pass");
             APIPrinters = await APIAccessor.PrintersAccessor.GetAllPrintersAsync();
-            
+
+            Cursor = Cursors.Wait;
             //fill the grid with customers
             try
             {//from oracle
@@ -93,6 +86,7 @@ namespace BarcodePrinter
                 MessageBox.Show("Unable to retrieve customers from Oracle database.\nShowing previous Customers");
                 GetCustomers();
             }
+            Cursor = Cursors.Arrow;
         }
 
         #region Printers
