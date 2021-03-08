@@ -57,6 +57,16 @@ namespace BarcodePrinter
             settings = new PrinterSettings(PrintJob.PrintOptions.End);
             ckTear.IsChecked = true;
             dbCommands = new Repository();
+
+            test();
+        }
+
+        void test()
+        {
+            string s = "0433002108";
+
+            var res = string.Format("{0:0000}-{1:000-000}", s.Substring(0, 4), s.Substring(4));
+            var res1 = string.Format("{0:000-000}", s.Substring(4));
         }
 
         /// <summary>
@@ -269,7 +279,7 @@ namespace BarcodePrinter
                     if (!APIPrinters.Any(x => x.SerialNumber == pj.Identifier))//see if we found this printer in the db
                     {
                         //if not, add printer to db
-                        await APIAccessor.PrintersAccessor.PostPrinterAsync(new API_Lib.Models.Printer(0, pj.Identifier, "USB" + (APIPrinters.Count + 1).ToString(), -10, 150, 60, 1, 16, "MT", 406, 210, null, false, null, pj.Model, false));
+                        await APIAccessor.PrintersAccessor.PostPrinterAsync(new Printer(0, pj.Identifier, "USB" + (APIPrinters.Count + 1).ToString(), -10, 150, 60, 1, 16, "MT", 406, 210, null, false, null, pj.Model, false));
                         APIPrinters = await APIAccessor.PrintersAccessor.GetAllPrintersAsync();//update list
                     }
                     else

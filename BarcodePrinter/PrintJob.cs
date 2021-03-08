@@ -121,7 +121,7 @@ namespace BarcodePrinter
                 MainLabel.Append("^MMC");
             else if (opt == PrintOptions.Peel)
                 MainLabel.Append("^MMP");
-            else if (opt == PrintOptions.Tear)
+            else //if (opt == PrintOptions.Tear)
                 MainLabel.Append("^MMT");
 
             //fo x, y, justification (0,1,2)
@@ -302,8 +302,11 @@ namespace BarcodePrinter
                 }
                 if (!errValue)//if no errors, send data to print
                 {
-                    string sNumWDashes = String.Format("{0,0:0000}-000-{1,0:000-000-000}", barcode.Substring(0,4), barcode.Substring(4));//for readable number
-                    string sNumOnly = String.Format("{0,0:0000}000{1,0:000000000}", barcode.Substring(0, 4), barcode.Substring(4));//value for barcode image
+                    string s1 = barcode.Substring(0, 4);
+                    string s2 = barcode.Substring(4, 3);
+                    string s3 = barcode.Substring(7);
+                    string sNumWDashes = String.Format("{0,0:0000}-000-{1,0:000}-{2,0:000}", s1, s2, s3);//for readable number
+                    string sNumOnly = String.Format("{0,0:0000}{1,0:000000000}", barcode.Substring(0, 4), barcode.Substring(4));//value for barcode image
 
                     //build printer command
                     StringBuilder individualLabel = new StringBuilder();
