@@ -27,8 +27,6 @@ namespace BarcodePrinter
     /// </summary>
     public partial class MainWindow : Window
     {
-
-        
         #region fields
 
         private string _Version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
@@ -494,24 +492,6 @@ namespace BarcodePrinter
         }
         
         /// <summary>
-        /// make sure the startnum is valid
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private async void popBtnStartNum_Click(object sender, RoutedEventArgs e)
-        {
-            if (int.TryParse(popTxtStartNum.Text, out iStartNum) && iStartNum > -1)//if valid, then close the popup
-            {
-                popStart.IsOpen = false;
-                await AddLabel();
-            }
-            else//if NAN or below 0, keep popup open
-            {
-                MessageBox.Show("Start num must be an integer with value 0 or more");
-            }
-        }
-                
-        /// <summary>
         /// print labels, updating MDL db
         /// </summary>
         /// <param name="sender"></param>
@@ -540,15 +520,16 @@ namespace BarcodePrinter
                 iCustNum = int.Parse(SelectedClient.Code.Substring(1));//get client code without 'C'
             }
 
-            await SetStartNum();//get starting num, either from db or from user entry
-
-            if (iStartNum == -1)//couldn't find a start num
+            if (!int.TryParse(txtStartingNum.Text, out iStartNum))
             {
+                MessageBox.Show("Starting number is not valid");
                 return;
             }
-
-            var start = await APIAccessor.LabelAccessor.GetPrintLabelAsync(SelectedClient.Code.Substring(1));//starting barcode as a string
-            iStartNum = int.Parse(start.Substring(4));//strip off customer number, convert to int
+            await AddLabel();
+            //if (iStartNum == -1)//couldn't find a start num
+            //{
+            //    return;
+            //}
 
             //get user confirmation
             string confirm = string.Format("{0} labels will be printed for {1}. This will start at {2} and go through {3}. Is this correct?", iNumLabels, SelectedClient.Code, iStartNum, iStartNum + iNumLabels - 1);
@@ -624,6 +605,8 @@ namespace BarcodePrinter
             }
 
             iStartNum = -1;//reset the start number
+            SetStartNum();
+
             rdo220A.IsEnabled = true;
             rdo220B.IsEnabled = true;
             rdo610.IsEnabled = true;
@@ -795,36 +778,54 @@ namespace BarcodePrinter
             }
 
             if (selectedCustomer == null)//didn't find it
-            {//inform user, open popup for user to enter starting barcode
-                MessageBox.Show("Customer not listed in database:\nSupply starting barcode and the customer will be added to database.");
-                popStart.IsOpen = true;
+            {//inform user, prompt to enter starting barcode
+                MessageBox.Show("Customer not listed in database:\nStarting barcode is needed be added to database.");
+                txtStartingNum.Text = "0";
+                txtStartingNum.Focus();
+                txtStartingNum.SelectAll();
                 return false;
             }
             else//we found the customer
             {
-                if (string.IsNullOrEmpty(popTxtStartNum.Text))//user didn't enter anything
+                var s = await APIAccessor.LabelAccessor.GetPrintLabelAsync(SelectedClient.Code.Substring(1));//check the string
+                
+                if (s.ToUpper().Contains("STARTNUM") || s.ToUpper().Contains("ALL"))//need to add labels to db
                 {
-                    var s = await APIAccessor.LabelAccessor.GetPrintLabelAsync(SelectedClient.Code.Substring(1));//check the string
+                    int num = await APIAccessor.BarcodeAccessor.GetLastBarcodeAsync(selectedCustomer.CustomerID);
+                    txtStartingNum.Text = num.ToString();
+                }
+                else
+                {
+                    int num = int.Parse(s.Substring(4));
+                    txtStartingNum.Text = num.ToString();
+                }
 
-                    //s will be either "Supply Startnum" or "All Printed" when we need to create new labels
-                    if (s.ToUpper().Contains("STARTNUM") || s.ToUpper().Contains("ALL"))
-                    {
-                        if (iStartNum == -1)//if istartnum is -1
-                        {//update iStartNum to last barcode group that was set
-                            iStartNum = await APIAccessor.BarcodeAccessor.GetLastBarcodeAsync(selectedCustomer.CustomerID);
-                        }
-                        await AddLabel();//add new label
-                        s = await APIAccessor.LabelAccessor.GetPrintLabelAsync(SelectedClient.Code.Substring(1));//make sure start is valid
-                    }
-                    
-                    iStartNum = int.Parse(s.Substring(4));//parse out the barcode number
-                }
-                else//user has entered a starting num
-                {
-                    iStartNum = int.Parse(popTxtStartNum.Text);//use that start num
-                    popTxtStartNum.Text = "";
-                }
                 return true;
+
+                //if (!HaveStartNum)//need to get possible starting number from db
+                //{
+                //    var s = await APIAccessor.LabelAccessor.GetPrintLabelAsync(SelectedClient.Code.Substring(1));//check the string
+
+                //    //s will be either "Supply Startnum" or "All Printed" when we need to create new labels
+                //    if (s.ToUpper().Contains("STARTNUM") || s.ToUpper().Contains("ALL"))
+                //    {
+                //        if (iStartNum == -1)//if istartnum is -1
+                //        {//update iStartNum to last barcode group that was set
+                //            iStartNum = await APIAccessor.BarcodeAccessor.GetLastBarcodeAsync(selectedCustomer.CustomerID);
+                //        }
+                //        await AddLabel();//add new label
+                //        s = await APIAccessor.LabelAccessor.GetPrintLabelAsync(SelectedClient.Code.Substring(1));//make sure start is valid
+                //    }
+
+                //    iStartNum = int.Parse(s.Substring(4));//parse out the barcode number
+                //    txtStartingNum.Text = s.Substring(4);
+                //}
+                //else//user has entered a starting num
+                //{
+                //    iStartNum = int.Parse(txtStartingNum.Text);//use that start num
+                //    txtStartingNum.Text = "";
+                //}
+                //return true;
             }
         }
 
@@ -973,9 +974,11 @@ namespace BarcodePrinter
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void grdFoundclients_SelectedCellsChanged(object sender, SelectedCellsChangedEventArgs e)
+        private async void grdFoundclients_SelectedCellsChanged(object sender, SelectedCellsChangedEventArgs e)
         {
             SelectedClient = grdFoundclients.SelectedItem as Client;
+            //set start num
+            await SetStartNum();
         }
         
         /// <summary>
