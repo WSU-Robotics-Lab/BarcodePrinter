@@ -18,8 +18,9 @@ namespace BarcodePrinter
         public int PrintRate;
         public int TearOffset;
         public bool Rotate = false;
+        public string Mode;
 
-        public PrinterSettings(PrintOptions options = PrintOptions.End)
+        public PrinterSettings(string mode, PrintOptions options = PrintOptions.End)
         {
             mainLabel = new LabelSettings();
             individualLabel = new LabelSettings(150, 50, 16);
@@ -27,9 +28,10 @@ namespace BarcodePrinter
             PrintRate = 1;
             TearOffset = -20;
             Rotate = false;
+            Mode = mode;
         }
 
-        public PrinterSettings(PrintOptions options = PrintOptions.End, int mainLeft = 150, int mainTop = 50, int mainDarkness = 16, int indLeft = 150, int indTop = 40, int indDark = 16, int rate = 1, int tear = -20, bool rotate = false)
+        public PrinterSettings(string mode, PrintOptions options = PrintOptions.End, int mainLeft = 150, int mainTop = 50, int mainDarkness = 16, int indLeft = 150, int indTop = 40, int indDark = 16, int rate = 1, int tear = -20, bool rotate = false)
         {
             individualLabel = new LabelSettings(indLeft, indTop, indDark);
             mainLabel = new LabelSettings(mainLeft, mainTop, mainDarkness);
@@ -37,6 +39,7 @@ namespace BarcodePrinter
             PrintRate = rate;
             TearOffset = tear;
             Rotate = rotate;
+            Mode = mode;
         }
 
         #region getters/setters

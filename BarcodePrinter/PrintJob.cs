@@ -1,5 +1,5 @@
 ﻿#define DEBUG
-#undef DEBUG
+//#undef DEBUG
 
 using System;
 using System.Linq;
@@ -99,7 +99,7 @@ namespace BarcodePrinter
         /// <param name="iCustNum"></param>
         /// <param name="opt"></param>
         /// <returns></returns>
-        private bool PrintMainLabel(int left, int top, int darkness, int rate, int tear, int iCustNum, PrintOptions opt, string custName)
+        private bool PrintMainLabel(int left, int top, int darkness, int rate, int tear, int iCustNum, PrintOptions opt, string custName, string mode)
         {
             StringBuilder MainLabel = new StringBuilder();
             MainLabel.Append("^XA");
@@ -112,10 +112,13 @@ namespace BarcodePrinter
             // Darkness
             MainLabel.Append("~SD").Append(darkness.ToString());
             // Tear / Cut offset
-            MainLabel.Append("~TA").Append(string.Format("{0:000}",tear));
-            // Thermal Transfer
-            MainLabel.Append("^MTD");
-            
+            MainLabel.Append("~TA").Append(string.Format("{0:000}", tear));
+            // T = thermal transfer, D = direct thermal
+            var m = "";
+            if (mode == "TT") { m = "T"; }
+            else if (mode == "DT") { m = "D"; }
+            MainLabel.Append("^MT").Append(m);
+                        
             // print mode, T=tear, P=peel, C=cutter
             if (opt == PrintOptions.Label)  
                 MainLabel.Append("^MMC");
@@ -174,7 +177,7 @@ namespace BarcodePrinter
         /// <returns>success or failure</returns>
         public bool PrintMainLabel(int iCustNum, string custName)
         {
-            return PrintMainLabel(printerSettings.MainLeft, printerSettings.MainTop, printerSettings.MainDarkness, printerSettings.PrintRate, printerSettings.TearOffset, iCustNum, printerSettings.options, custName);
+            return PrintMainLabel(printerSettings.MainLeft, printerSettings.MainTop, printerSettings.MainDarkness, printerSettings.PrintRate, printerSettings.TearOffset, iCustNum, printerSettings.options, custName, printerSettings.Mode);
         }
 
         /// <summary>
@@ -187,7 +190,7 @@ namespace BarcodePrinter
         /// <param name="tear"></param>
         /// <param name="error"></param>
         /// <returns></returns>
-        public bool SetIndividualLabelFormat(int left, int top, int darkness, int rate, int tear, out string error)
+        public bool SetIndividualLabelFormat(int left, int top, int darkness, int rate, int tear, out string error, string mode)
         {
             StringBuilder label = new StringBuilder();
             label.Append("^XA");
@@ -203,7 +206,10 @@ namespace BarcodePrinter
             // Tear / Cut offset
             label.Append("~TA").Append(string.Format("{0:000}", tear));
             // Thermal Transfer
-            label.Append("^MTD");
+            var m = "";
+            if (mode == "TT") { m = "T"; }
+            else if (mode == "DT") { m = "D"; }
+            label.Append("^MT").Append(m);
 
             string rotation = "N";
             int actualLeft = left;
@@ -262,7 +268,7 @@ namespace BarcodePrinter
         private bool PrintIndividualLabels(int left, int top, int darkness, int rate, int tear, string barcode, out string error, PrintOptions opt, bool lastLabel = false)
         {
             if (!labelFormatSet)//if not set
-                if (!SetIndividualLabelFormat(left, top, darkness, rate, tear, out error))//try to set the format
+                if (!SetIndividualLabelFormat(left, top, darkness, rate, tear, out error, printerSettings.Mode))//try to set the format
                     return false;
                 else
                     error = "";
@@ -302,11 +308,11 @@ namespace BarcodePrinter
                 }
                 if (!errValue)//if no errors, send data to print
                 {
-                    string s1 = barcode.Substring(0, 4);
-                    string s2 = barcode.Substring(4, 3);
-                    string s3 = barcode.Substring(7);
-                    string sNumWDashes = String.Format("{0,0:0000}-000-{1,0:000}-{2,0:000}", s1, s2, s3);//for readable number
-                    string sNumOnly = String.Format("{0,0:0000}{1,0:000000000}", barcode.Substring(0, 4), barcode.Substring(4));//value for barcode image
+                    int custNum = int.Parse(barcode.Substring(0, 4));
+                    int code = int.Parse(barcode.Substring(4));
+                    
+                    string sNumWDashes = String.Format("{0,0:0000}-000-{1,0:000-000-000}", custNum, code);//for readable number
+                    string sNumOnly = String.Format("{0,0:0000}{1,0:000000000}", custNum, code);//value for barcode image
 
                     //build printer command
                     StringBuilder individualLabel = new StringBuilder();

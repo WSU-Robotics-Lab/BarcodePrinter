@@ -54,7 +54,7 @@ namespace BarcodePrinter
             _PrinterConnections = new List<Zebra.Sdk.Comm.ConnectionA>();
             _Monitor = new System.Threading.Thread(new System.Threading.ThreadStart(Monitor_Thread));
             Title += " Version: " +  _Version;
-            settings = new PrinterSettings(PrintJob.PrintOptions.End);
+            settings = new PrinterSettings("DT", PrintJob.PrintOptions.End);
             ckTear.IsChecked = true;
             dbCommands = new Repository();
             
@@ -402,6 +402,10 @@ namespace BarcodePrinter
             popDarkness.Text = printer.Density.ToString();
             popTear.Text = printer.TearOffset.ToString();
             popRate.Text = printer.Rate.ToString();
+            if (printer.Mode == "TT")
+                rdoModeTransfer.IsChecked = true;
+            else if (printer.Mode == "DT")
+                rdoModeDirect.IsChecked = true;
 
             popSettings.IsOpen = !popSettings.IsOpen;//toggle settings popup
         }
@@ -438,6 +442,11 @@ namespace BarcodePrinter
                 settings.TearOffset = int.Parse(popTear.Text);
                 settings.Rotate = (bool)popCkRotate.IsChecked;
 
+                if ((bool)rdoModeTransfer.IsChecked)
+                    settings.Mode = "TT";
+                else if ((bool)rdoModeDirect.IsChecked)
+                    settings.Mode = "DT";
+                
                 //print test label 1234-000-00123456
                 PrintJob p = new PrintJob(printer, settings);
                 p.PrintTestLabel(out string error);
@@ -465,6 +474,11 @@ namespace BarcodePrinter
                     p.Rate = int.Parse(popRate.Text);
                     p.TearOffset = int.Parse(popTear.Text);
                     p.Rotate90 = (bool)popCkRotate.IsChecked;
+
+                    if ((bool)rdoModeDirect.IsChecked)
+                        p.Mode = "DT";
+                    else if ((bool)rdoModeTransfer.IsChecked)
+                        p.Mode = "TT";
 
                     //update db values
                     if (await APIAccessor.PrintersAccessor.PostPrinterAsync(p))
@@ -595,7 +609,7 @@ namespace BarcodePrinter
 
                 if (printed)//if printed successfully, tell user what we printed
                 {
-                    txtStatus.Text = "Printing Label: " + barcode.ToString();
+                    txtStatus.Text = "Printing Label: " + string.Format("{0:0000}-000-{1:000-000-000}", int.Parse(barcode.Substring(0, 4)), int.Parse(barcode.Substring(4)));
                     txtStatus.Refresh();
                     barcode = await APIAccessor.LabelAccessor.GetPrintLabelAsync(SelectedClient.Code.Substring(1), true);
                 }
@@ -1003,6 +1017,14 @@ namespace BarcodePrinter
 
         #endregion
 
+        private void popRdoMode_Checked(object sender, RoutedEventArgs e)
+        {
+            var btn = sender as RadioButton;
+            if (btn.Name.ToUpper().Contains("TRANSFER"))
+                settings.Mode = "TT";
+            else if (btn.Name.ToUpper().Contains("DIRECT"))
+                settings.Mode = "DT";
+        }
     }
 }
 public static class ExtensionMethods

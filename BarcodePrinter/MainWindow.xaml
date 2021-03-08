@@ -55,6 +55,7 @@
                                     <RowDefinition/>
                                     <RowDefinition/>
                                     <RowDefinition/>
+                                    <RowDefinition/>
                                 </Grid.RowDefinitions>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition/>
@@ -71,15 +72,19 @@
                                 <TextBox x:Name="popTop" Text="Enter Offset..." Grid.Row="4" LostFocus="UxSettings_LostFocus" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" GotFocus="UxSettings_GotFocus"/>
                                 <Label x:Name="popDarknessLbl" Content="Darkness:" Grid.Row="5" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
                                 <TextBox x:Name="popDarkness" Text="Enter Darkness..." Grid.Row="6" LostFocus="UxSettings_LostFocus" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" GotFocus="UxSettings_GotFocus"/>
-                                <Button x:Name="popBtnTestPrint" Content="Print Test Label" Grid.Row="7" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Click="popBtnTestPrint_Click"/>
-                                <Button x:Name="popBtnSave" Grid.Row="7" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Content="Save" Click="popBtnSave_Click"/>
 
                                 <Label x:Name="popTearLbl" Grid.Row="1" Grid.Column="1" Content="Tear/Cut Offset:"/>
                                 <TextBox x:Name="popTear" Grid.Row="2" Grid.Column="1" LostFocus="UxSettings_LostFocus" GotFocus="UxSettings_GotFocus"/>
                                 <Label x:Name="popRateLbl" Grid.Row="3" Grid.Column="1" Content="Print Rate:"/>
                                 <TextBox x:Name="popRate" Grid.Row="4" Grid.Column="1" LostFocus="UxSettings_LostFocus" GotFocus="UxSettings_GotFocus"/>
 
-                                <CheckBox x:Name="popCkRotate" VerticalAlignment="Center" HorizontalAlignment="Center" Grid.Row="5" Grid.RowSpan="2" Grid.Column="1" Content="Rotate 90" IsChecked="False" Checked="popCkRotate_Checked" Unchecked="popCkRotate_Checked"/>
+                                <CheckBox x:Name="popCkRotate" VerticalAlignment="Center" HorizontalAlignment="Center" Grid.Row="5" Grid.Column="1" Content="Rotate 90" IsChecked="False" Checked="popCkRotate_Checked" Unchecked="popCkRotate_Checked"/>
+                                
+                                <RadioButton x:Name="rdoModeTransfer" GroupName="Mode" VerticalAlignment="Top" HorizontalAlignment="Stretch" Grid.Row="7" Content="Thermal Transfer" Checked="popRdoMode_Checked"/>
+                                <RadioButton x:Name="rdoModeDirect" GroupName="Mode" VerticalAlignment="Center" HorizontalAlignment="Stretch" Grid.Row="7" Grid.Column="1" Content="Direct Thermal" Checked="popRdoMode_Checked"/>
+                                
+                                <Button x:Name="popBtnTestPrint" Content="Print Test Label" Grid.Row="8" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Click="popBtnTestPrint_Click"/>
+                                <Button x:Name="popBtnSave" Grid.Row="8" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Content="Save" Click="popBtnSave_Click"/>
 
                             </Grid>
                         </Viewbox>
