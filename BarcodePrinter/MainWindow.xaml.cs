@@ -32,7 +32,7 @@ namespace BarcodePrinter
         private string _Version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
         private List<Zebra.Sdk.Comm.ConnectionA> _PrinterConnections;
         private List<Printer> APIPrinters;//list of printers pulled from API
-        private System.Threading.Thread _Monitor;
+        //private System.Threading.Thread _Monitor;
         private PrinterSettings settings;//left, top, tear, options etc,
         List<Client> clients;//list of clients pulled from Oracle
         Client SelectedClient;//the client selected by user
@@ -42,7 +42,6 @@ namespace BarcodePrinter
         //private Timer _StatusTimer;
 
         #endregion
-
 
         public MainWindow()
         {
@@ -55,10 +54,8 @@ namespace BarcodePrinter
             settings = new PrinterSettings("DT", PrintJob.PrintOptions.End);
             ckTear.IsChecked = true;
             dbCommands = new Repository();
-            
         }
-
-       
+               
         /// <summary>
         /// set authentication to logged in user
         /// fill up client grid
@@ -794,7 +791,7 @@ namespace BarcodePrinter
         //}
 
         /// <summary>
-        /// set the first barcode
+        /// set the first barcode for this print
         /// </summary>
         /// <returns></returns>
         private async Task<bool> SetStartNum()
@@ -824,41 +821,16 @@ namespace BarcodePrinter
                 
                 if (s.ToUpper().Contains("STARTNUM") || s.ToUpper().Contains("ALL"))//need to add labels to db
                 {
-                    int num = await APIAccessor.BarcodeAccessor.GetLastBarcodeAsync(selectedCustomer.CustomerID) + 1;
+                    int num = await APIAccessor.BarcodeAccessor.GetLastBarcodeAsync(selectedCustomer.CustomerID) + 1;//add one for the next starting number
                     txtStartingNum.Text = num.ToString();
                 }
                 else
                 {
-                    int num = int.Parse(s.Substring(4)) + 1;
+                    int num = int.Parse(s.Substring(4)) + 1;//add one for the next starting number
                     txtStartingNum.Text = num.ToString();
                 }
 
                 return true;
-
-                //if (!HaveStartNum)//need to get possible starting number from db
-                //{
-                //    var s = await APIAccessor.LabelAccessor.GetPrintLabelAsync(SelectedClient.Code.Substring(1));//check the string
-
-                //    //s will be either "Supply Startnum" or "All Printed" when we need to create new labels
-                //    if (s.ToUpper().Contains("STARTNUM") || s.ToUpper().Contains("ALL"))
-                //    {
-                //        if (iStartNum == -1)//if istartnum is -1
-                //        {//update iStartNum to last barcode group that was set
-                //            iStartNum = await APIAccessor.BarcodeAccessor.GetLastBarcodeAsync(selectedCustomer.CustomerID);
-                //        }
-                //        await AddLabel();//add new label
-                //        s = await APIAccessor.LabelAccessor.GetPrintLabelAsync(SelectedClient.Code.Substring(1));//make sure start is valid
-                //    }
-
-                //    iStartNum = int.Parse(s.Substring(4));//parse out the barcode number
-                //    txtStartingNum.Text = s.Substring(4);
-                //}
-                //else//user has entered a starting num
-                //{
-                //    iStartNum = int.Parse(txtStartingNum.Text);//use that start num
-                //    txtStartingNum.Text = "";
-                //}
-                //return true;
             }
         }
 

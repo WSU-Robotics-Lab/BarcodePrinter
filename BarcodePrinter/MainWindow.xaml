@@ -159,7 +159,7 @@
                 <TextBox x:Name="txtNumLabels" Grid.Row="1" VerticalContentAlignment="Center" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" LostFocus="TextBox_LostFocus" IsEnabled="False"/>
                 <TextBlock Text="Starting Number:" Grid.Row="2" HorizontalAlignment="Left" VerticalAlignment="Center"/>
                 <TextBox x:Name="txtStartingNum" Grid.Row="3" HorizontalAlignment="Stretch" VerticalAlignment="Center" IsEnabled="False"/>
-                <TextBlock x:Name="txtStatus" Margin="10" HorizontalAlignment="Stretch" Grid.Row="4" VerticalAlignment="Top"/>
+                <TextBlock x:Name="txtStatus" HorizontalAlignment="Stretch" Grid.Row="4" VerticalAlignment="Top" Margin="0,10,0,0"/>
             </Grid>
         </Viewbox>
 
