@@ -159,9 +159,9 @@
                 </Grid.RowDefinitions>
                 
                 <TextBlock Text="Number of Labels:" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="0,0,25,10"/>
-                <TextBox x:Name="txtNumLabels" Grid.Row="1" Width="90" VerticalContentAlignment="Center" HorizontalAlignment="Right" VerticalAlignment="Stretch" LostFocus="TextBox_LostFocus"/>
+                <TextBox x:Name="txtNumLabels" Grid.Row="1" Width="90" VerticalContentAlignment="Center" HorizontalAlignment="Right" VerticalAlignment="Stretch" LostFocus="TextBox_LostFocus" IsEnabled="False"/>
                 <TextBlock Text="Starting Number:" Grid.Row="2" HorizontalAlignment="Left" VerticalAlignment="Center"/>
-                <TextBox x:Name="txtStartingNum" Grid.Row="3" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="33, 0, 0, 0"/>
+                <TextBox x:Name="txtStartingNum" Grid.Row="3" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="33, 0, 0, 0" IsEnabled="False"/>
 
             </Grid>
         </Viewbox>

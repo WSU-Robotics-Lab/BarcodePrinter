@@ -525,17 +525,51 @@ namespace BarcodePrinter
                 MessageBox.Show("Starting number is not valid");
                 return;
             }
-            await AddLabel();
-            //if (iStartNum == -1)//couldn't find a start num
-            //{
-            //    return;
-            //}
+
+            var s = await APIAccessor.LabelAccessor.GetPrintLabelAsync(SelectedClient.Code.Substring(1));//check the string
+            int lastNum;
+            if (selectedCustomer == null)
+            {
+                var customers = await APIAccessor.CustomerAccessor.GetAllCustomersAsync();
+                foreach (Customer c in customers)
+                {
+                    if (c.CustomerNumber == SelectedClient.Code.Substring(1))
+                    {
+                        selectedCustomer = c;
+                        break;
+                    }
+                }
+            }
+
+            if (s.ToUpper().Contains("STARTNUM") || s.ToUpper().Contains("ALL"))//need to add labels to db
+            {
+                lastNum = await APIAccessor.BarcodeAccessor.GetLastBarcodeAsync(selectedCustomer.CustomerID) + 1;
+            }
+            else
+            {
+                lastNum = int.Parse(s.Substring(4)) + 1;
+            }
+
+            int txtNum = int.Parse(txtStartingNum.Text);
+            if (txtNum < lastNum)
+            {
+                MessageBox.Show("Starting number is too low");
+                await SetStartNum();
+                return;
+            }
 
             //get user confirmation
             string confirm = string.Format("{0} labels will be printed for {1}. This will start at {2} and go through {3}. Is this correct?", iNumLabels, SelectedClient.Code, iStartNum, iStartNum + iNumLabels - 1);
             var res = MessageBox.Show(confirm, "Confirm Printing", MessageBoxButton.YesNo);
             if (res != MessageBoxResult.Yes) return;//if no, then cancel
 
+            var label = await APIAccessor.LabelAccessor.GetPrintLabelAsync(selectedCustomer.CustomerNumber);
+            
+            if (label.ToUpper().Contains("ALL") || label.ToUpper().Contains("SUPPLY"))
+            {
+                await AddLabel();
+            }
+            
             //for printing on multiple printers
             Queue<PrintJob> jobs = new Queue<PrintJob>();
             foreach (Zebra.Sdk.Comm.ConnectionA Printer in _PrinterConnections)//loop through connections
@@ -604,8 +638,7 @@ namespace BarcodePrinter
                 jobs.Enqueue(p);//put the job on the back
             }
 
-            iStartNum = -1;//reset the start number
-            SetStartNum();
+            await SetStartNum();
 
             rdo220A.IsEnabled = true;
             rdo220B.IsEnabled = true;
@@ -791,12 +824,12 @@ namespace BarcodePrinter
                 
                 if (s.ToUpper().Contains("STARTNUM") || s.ToUpper().Contains("ALL"))//need to add labels to db
                 {
-                    int num = await APIAccessor.BarcodeAccessor.GetLastBarcodeAsync(selectedCustomer.CustomerID);
+                    int num = await APIAccessor.BarcodeAccessor.GetLastBarcodeAsync(selectedCustomer.CustomerID) + 1;
                     txtStartingNum.Text = num.ToString();
                 }
                 else
                 {
-                    int num = int.Parse(s.Substring(4));
+                    int num = int.Parse(s.Substring(4)) + 1;
                     txtStartingNum.Text = num.ToString();
                 }
 
@@ -837,15 +870,6 @@ namespace BarcodePrinter
         {
             if (int.TryParse(txtNumLabels.Text, out int numLabels))//make sure entered quantity is valid
             {//push client code, name, starting number, and number of labels to db
-                if (selectedCustomer != null)
-                {
-                    int lastNum = await APIAccessor.BarcodeAccessor.GetLastBarcodeAsync(selectedCustomer.CustomerID);
-                    if (lastNum != iStartNum)
-                    {
-                        numLabels -= (lastNum - iStartNum);
-                    }
-                }
-
                 var res = await APIAccessor.LabelAccessor.PostCreateLabel(new API_Lib.Models.ProcedureModels.InputModels.CreateLabelInput(SelectedClient.Code, SelectedClient.Name, iStartNum, numLabels));
             }
             else//inform user of invalid value in numlabels
@@ -979,6 +1003,8 @@ namespace BarcodePrinter
             SelectedClient = grdFoundclients.SelectedItem as Client;
             //set start num
             await SetStartNum();
+            txtNumLabels.IsEnabled = true;
+            txtStartingNum.IsEnabled = true;
         }
         
         /// <summary>
@@ -1028,6 +1054,7 @@ namespace BarcodePrinter
             else if (btn.Name.ToUpper().Contains("DIRECT"))
                 settings.Mode = "DT";
         }
+
     }
 }
 public static class ExtensionMethods
