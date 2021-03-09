@@ -50,7 +50,7 @@ namespace BarcodePrinter
             InitializeComponent();
             clients = new List<Client>();
             _PrinterConnections = new List<Zebra.Sdk.Comm.ConnectionA>();
-            _Monitor = new System.Threading.Thread(new System.Threading.ThreadStart(Monitor_Thread));
+            //_Monitor = new System.Threading.Thread(new System.Threading.ThreadStart(Monitor_Thread));
             Title += " Version: " +  _Version;
             settings = new PrinterSettings("DT", PrintJob.PrintOptions.End);
             ckTear.IsChecked = true;
@@ -678,7 +678,7 @@ namespace BarcodePrinter
         /// <param name="e"></param>
         private void btnExit_Click(object sender, RoutedEventArgs e)
         {
-            _Monitor.Abort(); 
+            //_Monitor.Abort(); 
             foreach (Zebra.Sdk.Comm.ConnectionA Printer in _PrinterConnections) Printer.Close();
             Application.Current.Shutdown();
         }
@@ -767,31 +767,31 @@ namespace BarcodePrinter
             return num == (iStartNum + int.Parse(txtNumLabels.Text) - 1);//compare to startnum + quantity
         }
         
-        /// <summary>
-        /// make sure the printers in the list are still connected
-        /// </summary>
-        private void Monitor_Thread()
-        {
-            while (true)
-            {
-                int count = 0;
-                foreach (Zebra.Sdk.Comm.ConnectionA Printer in _PrinterConnections)
-                {
-                    if (Printer.Connected)
-                    {
-                        try
-                        {
-                            Zebra.Sdk.Printer.PrinterStatus zPrinter = Zebra.Sdk.Printer.ZebraPrinterFactory.GetInstance(Printer).GetCurrentStatus();
-                            count += zPrinter.numberOfFormatsInReceiveBuffer / 2;
-                        }
-                        catch { }
-                    }
-                }
-                Dispatcher.Invoke(new Action(() => this.txbQueue.Text = "Current Printer Queue: " + count.ToString()));
-                Dispatcher.Invoke(new Action(() => this.txbQueue.Refresh()));
-                System.Threading.Thread.Sleep(500); 
-            }
-        }
+        ///// <summary>
+        ///// make sure the printers in the list are still connected
+        ///// </summary>
+        //private void Monitor_Thread()
+        //{
+        //    while (true)
+        //    {
+        //        int count = 0;
+        //        foreach (Zebra.Sdk.Comm.ConnectionA Printer in _PrinterConnections)
+        //        {
+        //            if (Printer.Connected)
+        //            {
+        //                try
+        //                {
+        //                    Zebra.Sdk.Printer.PrinterStatus zPrinter = Zebra.Sdk.Printer.ZebraPrinterFactory.GetInstance(Printer).GetCurrentStatus();
+        //                    count += zPrinter.numberOfFormatsInReceiveBuffer / 2;
+        //                }
+        //                catch { }
+        //            }
+        //        }
+        //        Dispatcher.Invoke(new Action(() => this.txbQueue.Text = "Current Printer Queue: " + count.ToString()));
+        //        Dispatcher.Invoke(new Action(() => this.txbQueue.Refresh()));
+        //        System.Threading.Thread.Sleep(500); 
+        //    }
+        //}
 
         /// <summary>
         /// set the first barcode
