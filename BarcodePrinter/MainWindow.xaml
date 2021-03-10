@@ -164,7 +164,7 @@
             </Viewbox>
 
             <Button x:Name="btnCancel" Content="Cancel Prints" IsEnabled="False" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Click="btnCancel_Click" Background="Red"/>
-            <Button x:Name="btnPrint" Content="Print" IsEnabled="True" Grid.Row="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Click="btnPrint_Click" Background="Green"/>
+            <Button x:Name="btnPrint" Content="Print" IsEnabled="False" Grid.Row="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Click="btnPrint_Click" Background="Green"/>
         </Grid>
    </Grid>
 </Window>

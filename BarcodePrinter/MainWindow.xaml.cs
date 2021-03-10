@@ -402,14 +402,19 @@ namespace BarcodePrinter
                     }
                     else//otherwise tell user to pick one
                     {
-                        foreach (var p in APIPrinters)
+                        MessageBox.Show("Must select a printer from the grid");
+                        return;
+                    }
+                }
+                else
+                {
+                    var temp = grdPrinter.SelectedItem as PrintJob;
+                    foreach (Printer p in APIPrinters)
+                    {
+                        if (p.SerialNumber == temp.Identifier)//find serial number in db printer list
                         {
-                            foreach (PrintJob pj in grdPrinter.Items)
-                                if (p.SerialNumber == pj.Identifier || p.ProductName.Contains("420") || p.ProductName.Contains("410"))//find serial number in db printer list
-                                {
-                                    printer = p;
-                                    break;
-                                }
+                            printer = p;
+                            break;
                         }
                     }
                 }
