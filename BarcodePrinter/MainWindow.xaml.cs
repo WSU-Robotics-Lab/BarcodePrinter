@@ -94,12 +94,13 @@ namespace BarcodePrinter
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private async void rdoPrinter_Checked(object sender, RoutedEventArgs e)
+        private async void ckPrinter_Checked(object sender, RoutedEventArgs e)
         {
             APIPrinters = await APIAccessor.PrintersAccessor.GetAllPrintersAsync();
             txtStatus.Text = "";
+            foreach (Zebra.Sdk.Comm.ConnectionA Conn in _PrinterConnections) { Conn.Close(); }
             _PrinterConnections.Clear();
-            if (rdo610.IsChecked.HasValue && rdo610.IsChecked.Equals(true))
+            if (ck610.IsChecked.HasValue && ck610.IsChecked.Equals(true))
             {
                 attempt610Connection();//connect to 610
                 
@@ -107,7 +108,7 @@ namespace BarcodePrinter
                 ckCutAtEnd.IsEnabled = true;
                 ckCutPerLabel.IsEnabled = true;
             }
-            if ((rdo220A.IsChecked.HasValue && rdo220A.IsChecked.Equals(true)) || (rdo220B.IsChecked.HasValue && rdo220B.IsChecked.Equals(true)))
+            if ((ck220A.IsChecked.HasValue && ck220A.IsChecked.Equals(true)) || (ck220B.IsChecked.HasValue && ck220B.IsChecked.Equals(true)))
             {
                 attempt220Connection();//connect to 220
                 
@@ -115,7 +116,7 @@ namespace BarcodePrinter
                 ckCutAtEnd.IsEnabled = false;
                 ckCutPerLabel.IsEnabled = false;
             }
-            if (rdoUSB.IsChecked.HasValue && rdoUSB.IsChecked.Equals(true))
+            if (ckUSB.IsChecked.HasValue && ckUSB.IsChecked.Equals(true))
             {
                 attemptUSBConnection();//connect to usb printers
                 
@@ -340,9 +341,9 @@ namespace BarcodePrinter
 
             if (btn.Name.Contains("610"))//show 610 info
             {
-                if (!(bool)rdo610.IsChecked)
+                if (!(bool)ck610.IsChecked)
                 {
-                    rdo610.IsChecked = true;
+                    ck610.IsChecked = true;
                 }
 
                 foreach (var p in APIPrinters)//find 610 printer in db list
@@ -355,11 +356,11 @@ namespace BarcodePrinter
                 }
                 
             }
-            else if (btn.Name.Contains("220A"))//show 220A setting values
+            if (btn.Name.Contains("220A"))//show 220A setting values
             {
-                if (!(bool)rdo220A.IsChecked)
+                if (!(bool)ck220A.IsChecked)
                 {
-                    rdo220A.IsChecked = true;
+                    ck220A.IsChecked = true;
                 }
 
                 foreach (var p in APIPrinters)//find 220A based on name
@@ -371,11 +372,11 @@ namespace BarcodePrinter
                     }
                 }
             }
-            else if (btn.Name.Contains("220B"))//show 220B setting values
+            if (btn.Name.Contains("220B"))//show 220B setting values
             {
-                if (!(bool)rdo220B.IsChecked)
+                if (!(bool)ck220B.IsChecked)
                 {
-                    rdo220B.IsChecked = true;
+                    ck220B.IsChecked = true;
 
                 }
                 foreach (var p in APIPrinters)//find 22B base on name
@@ -387,32 +388,29 @@ namespace BarcodePrinter
                     }
                 }
             }
-            else if (btn.Name.Contains("USB"))//find usb printer in db
+            if (btn.Name.Contains("USB"))//find usb printer in db
             {
-                if (!(bool)rdoUSB.IsChecked)
+                if (!(bool)ckUSB.IsChecked)
                 {
-                    rdoUSB.IsChecked = true;
+                    ckUSB.IsChecked = true;
                 }
                 if (grdPrinter.SelectedItem == null)//if a printer isn't selected
                 {
-                    if (grdPrinter.Items.Count == 1)//if there's only one, then select if
+                    if (grdPrinter.Items.Count == 1)//if there's only one, then select it
                     {
                         grdPrinter.SelectedIndex = 0;
                     }
                     else//otherwise tell user to pick one
                     {
-                        MessageBox.Show("no USB selected from grid");
-                        return;
-                    }
-                }
-
-                var sel = (PrintJob)grdPrinter.SelectedItem;
-                foreach (var p in APIPrinters)
-                {
-                    if (p.SerialNumber == sel.Identifier)//find serial number in db printer list
-                    {
-                        printer = p;
-                        break;
+                        foreach (var p in APIPrinters)
+                        {
+                            foreach (PrintJob pj in grdPrinter.Items)
+                                if (p.SerialNumber == pj.Identifier || p.ProductName.Contains("420") || p.ProductName.Contains("410"))//find serial number in db printer list
+                                {
+                                    printer = p;
+                                    break;
+                                }
+                        }
                     }
                 }
             }
@@ -529,7 +527,7 @@ namespace BarcodePrinter
         /// <param name="e"></param>
         private async void btnPrint_Click(object sender, RoutedEventArgs e)
         {
-            if (!rdo220A.IsChecked.HasValue && !rdo220B.IsChecked.HasValue && !rdo610.IsChecked.HasValue && !rdoUSB.IsChecked.HasValue)//make sure a printer was selected
+            if (!ck220A.IsChecked.HasValue && !ck220B.IsChecked.HasValue && !ck610.IsChecked.HasValue && !ckUSB.IsChecked.HasValue)//make sure a printer was selected
             {
                 MessageBox.Show("Must select a printer.");
                 return;
@@ -627,10 +625,10 @@ namespace BarcodePrinter
                 return;
             }
 
-            rdo220A.IsEnabled = false;
-            rdo220B.IsEnabled = false;
-            rdo610.IsEnabled = false;
-            rdoUSB.IsEnabled = false;
+            ck220A.IsEnabled = false;
+            ck220B.IsEnabled = false;
+            ck610.IsEnabled = false;
+            ckUSB.IsEnabled = false;
             btnSettings220A.IsEnabled = false;
             btnSettings220B.IsEnabled = false;
             btnSettings610.IsEnabled = false;
@@ -638,7 +636,6 @@ namespace BarcodePrinter
             btnCancel.IsEnabled = true;
             btnPrint.IsEnabled = false;
 
-            //TODO: queues need testing on location
             for (int i = 0; i < iNumLabels; i++)//loop through all labels
             {
                 var p = jobs.Dequeue();//get the front job
@@ -687,10 +684,10 @@ namespace BarcodePrinter
 
             await SetStartNum();
 
-            rdo220A.IsEnabled = true;
-            rdo220B.IsEnabled = true;
-            rdo610.IsEnabled = true;
-            rdoUSB.IsEnabled = true;
+            ck220A.IsEnabled = true;
+            ck220B.IsEnabled = true;
+            ck610.IsEnabled = true;
+            ckUSB.IsEnabled = true;
             btnSettings220A.IsEnabled = true;
             btnSettings220B.IsEnabled = true;
             btnSettings610.IsEnabled = true;
