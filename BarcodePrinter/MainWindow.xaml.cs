@@ -143,8 +143,31 @@ namespace BarcodePrinter
             
             //attempt connection to all printers
             attempt610Connection();
+            if (_PrinterConnections.Count > 0)
+            {
+                rdo610.IsChecked = true;
+                return;
+            }
             attempt220Connection();
+            if (_PrinterConnections.Count > 0)
+            {
+                if (_PrinterConnections[0].SimpleConnectionName.Contains("lbl-cv-174h-1"))
+                {
+                    rdo220A.IsChecked = true;
+                    return;
+                }
+                else if (_PrinterConnections[0].SimpleConnectionName.Contains("lbl-cv-174h-2"))
+                {
+                    rdo220B.IsChecked = true;
+                    return;
+                }
+            }
             attemptUSBConnection();
+            if (_PrinterConnections.Count > 0)
+            {
+                rdoUSB.IsChecked = true;
+                return;
+            }
         }
 
         /// <summary>
@@ -316,6 +339,11 @@ namespace BarcodePrinter
 
             if (btn.Name.Contains("610"))//show 610 info
             {
+                if (!(bool)rdo610.IsChecked)
+                {
+                    rdo610.IsChecked = true;
+                }
+
                 foreach (var p in APIPrinters)//find 610 printer in db list
                 {
                     if (p.ProductName.Contains("610"))//set the printer
@@ -328,6 +356,11 @@ namespace BarcodePrinter
             }
             else if (btn.Name.Contains("220A"))//show 220A setting values
             {
+                if (!(bool)rdo220A.IsChecked)
+                {
+                    rdo220A.IsChecked = true;
+                }
+
                 foreach (var p in APIPrinters)//find 220A based on name
                 {
                     if (p.PrinterName.Contains("174h-2"))
@@ -339,6 +372,11 @@ namespace BarcodePrinter
             }
             else if (btn.Name.Contains("220B"))//show 220B setting values
             {
+                if (!(bool)rdo220B.IsChecked)
+                {
+                    rdo220B.IsChecked = true;
+
+                }
                 foreach (var p in APIPrinters)//find 22B base on name
                 {
                     if (p.PrinterName.Contains("174h-3"))
@@ -353,7 +391,6 @@ namespace BarcodePrinter
                 if (!(bool)rdoUSB.IsChecked)
                 {
                     rdoUSB.IsChecked = true;
-                    rdoPrinter_Checked(rdoUSB, new RoutedEventArgs());
                 }
                 if (grdPrinter.SelectedItem == null)//if a printer isn't selected
                 {
@@ -424,7 +461,6 @@ namespace BarcodePrinter
         {
             if (_PrinterConnections.Count == 0 || _PrinterConnections == null) //if there aren't any printers
             {
-                rdoPrinter_Checked(rdo610, new RoutedEventArgs());//try to connect the selected printer
                 if (_PrinterConnections.Count == 0) { MessageBox.Show("No printers"); return; }//if still none, inform user
             }
             foreach (Zebra.Sdk.Comm.ConnectionA printer in _PrinterConnections)//search printers
@@ -764,32 +800,6 @@ namespace BarcodePrinter
             return num == (iStartNum + int.Parse(txtNumLabels.Text) - 1);//compare to startnum + quantity
         }
         
-        ///// <summary>
-        ///// make sure the printers in the list are still connected
-        ///// </summary>
-        //private void Monitor_Thread()
-        //{
-        //    while (true)
-        //    {
-        //        int count = 0;
-        //        foreach (Zebra.Sdk.Comm.ConnectionA Printer in _PrinterConnections)
-        //        {
-        //            if (Printer.Connected)
-        //            {
-        //                try
-        //                {
-        //                    Zebra.Sdk.Printer.PrinterStatus zPrinter = Zebra.Sdk.Printer.ZebraPrinterFactory.GetInstance(Printer).GetCurrentStatus();
-        //                    count += zPrinter.numberOfFormatsInReceiveBuffer / 2;
-        //                }
-        //                catch { }
-        //            }
-        //        }
-        //        Dispatcher.Invoke(new Action(() => this.txbQueue.Text = "Current Printer Queue: " + count.ToString()));
-        //        Dispatcher.Invoke(new Action(() => this.txbQueue.Refresh()));
-        //        System.Threading.Thread.Sleep(500); 
-        //    }
-        //}
-
         /// <summary>
         /// set the first barcode for this print
         /// </summary>
@@ -850,41 +860,13 @@ namespace BarcodePrinter
             }
         }
 
-        #endregion
-
-        #region Misc Events
-
         /// <summary>
-        /// make sure values are numbers
+        /// assign textbox values to the correct setting
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void TextBox_LostFocus(object sender, RoutedEventArgs e)
+        /// <param name="txb"></param>
+        /// <param name="res"></param>
+        private void ApplySettings(TextBox txb, int res)
         {
-            TextBox tmpBox = sender as TextBox;
-            
-            if (!int.TryParse(tmpBox.Text, out int txtNumber))
-            {
-                MessageBox.Show("Value must be an integer!");
-            }
-        }
-
-        /// <summary>
-        /// for settings, make sure values are numbers and copy values
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void UxSettings_LostFocus(object sender, RoutedEventArgs e)
-        {
-            TextBox txb = sender as TextBox;
-            int res;
-            if (!Int32.TryParse(txb.Text, out res))
-            {
-                MessageBox.Show("Value must be an integer");
-                txb.Text = "0";
-                return;
-            }
-
             //copy value to correct setting
             if (txb.Name.ToUpper().Contains("LEFT"))
             {
@@ -932,18 +914,69 @@ namespace BarcodePrinter
                 }
                 settings.IndividualDarkness = res;
             }
-            
         }
 
+        ///// <summary>
+        ///// make sure the printers in the list are still connected
+        ///// </summary>
+        //private void Monitor_Thread()
+        //{
+        //    while (true)
+        //    {
+        //        int count = 0;
+        //        foreach (Zebra.Sdk.Comm.ConnectionA Printer in _PrinterConnections)
+        //        {
+        //            if (Printer.Connected)
+        //            {
+        //                try
+        //                {
+        //                    Zebra.Sdk.Printer.PrinterStatus zPrinter = Zebra.Sdk.Printer.ZebraPrinterFactory.GetInstance(Printer).GetCurrentStatus();
+        //                    count += zPrinter.numberOfFormatsInReceiveBuffer / 2;
+        //                }
+        //                catch { }
+        //            }
+        //        }
+        //        Dispatcher.Invoke(new Action(() => this.txbQueue.Text = "Current Printer Queue: " + count.ToString()));
+        //        Dispatcher.Invoke(new Action(() => this.txbQueue.Refresh()));
+        //        System.Threading.Thread.Sleep(500); 
+        //    }
+        //}
+        #endregion
+
+        #region Misc Events
+
         /// <summary>
-        /// empty textbox when selected
+        /// make sure values are numbers
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void UxSettings_GotFocus(object sender, RoutedEventArgs e)
+        private void TextBox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            TextBox tmpBox = sender as TextBox;
+            
+            if (!int.TryParse(tmpBox.Text, out int txtNumber))
+            {
+                MessageBox.Show("Value must be an integer!");
+            }
+        }
+
+        /// <summary>
+        /// for settings, make sure values are numbers and copy values
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void UxSettings_LostFocus(object sender, RoutedEventArgs e)
         {
             TextBox txb = sender as TextBox;
-            txb.Text = "";
+            int res;
+            if (!Int32.TryParse(txb.Text, out res))
+            {
+                MessageBox.Show("Value must be an integer");
+                txb.Text = "0";
+                return;
+            }
+
+            ApplySettings(txb, res);
         }
 
         /// <summary>
@@ -999,34 +1032,26 @@ namespace BarcodePrinter
             {
                 settings.options = PrintJob.PrintOptions.Peel;
             }
-            else
+            else if (box.Name.ToUpper().Contains("TEAR"))
             {
                 settings.options = PrintJob.PrintOptions.Tear;
             }
-        }
-
-        /// <summary>
-        /// set rotation
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void popCkRotate_Checked(object sender, RoutedEventArgs e)
-        {
-            settings.Rotate = (bool)popCkRotate.IsChecked;
-            FlipTopAndLeft();
+            else if (box.Name.ToUpper().Contains("TRANSFER"))
+            {
+                settings.Mode = "TT";
+            }
+            else if (box.Name.ToUpper().Contains("DIRECT"))
+            {
+                settings.Mode = "DT";
+            }
+            else if (box.Name.ToUpper().Contains("ROTATE"))
+            {
+                settings.Rotate = (bool)popCkRotate.IsChecked;
+                FlipTopAndLeft();
+            }
         }
 
         #endregion
-
-        private void popRdoMode_Checked(object sender, RoutedEventArgs e)
-        {
-            var btn = sender as RadioButton;
-            if (btn.Name.ToUpper().Contains("TRANSFER"))
-                settings.Mode = "TT";
-            else if (btn.Name.ToUpper().Contains("DIRECT"))
-                settings.Mode = "DT";
-        }
-
     }
 }
 public static class ExtensionMethods

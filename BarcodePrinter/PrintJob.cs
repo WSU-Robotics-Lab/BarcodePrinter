@@ -1,5 +1,5 @@
 ﻿#define DEBUG
-#undef DEBUG
+//#undef DEBUG
 
 using System;
 using System.Linq;
@@ -159,7 +159,7 @@ namespace BarcodePrinter
             try//try to send the label
             {
                 if (!connection.Connected) { connection.Open(); }
-            #if (!DEBUG)
+            #if (!DEBUG)//don't send ZPL when debugging
                 connection.Write(Encoding.ASCII.GetBytes(MainLabel.ToString()));
             #endif
                 return true;
@@ -335,7 +335,7 @@ namespace BarcodePrinter
                     
                     //send command, if successful, return true
                     try {
-                    #if !DEBUG
+                    #if !DEBUG//don't send ZPL when debugging
                         connection.Write(Encoding.ASCII.GetBytes(individualLabel.ToString())); 
                     #endif
                         return true; 
