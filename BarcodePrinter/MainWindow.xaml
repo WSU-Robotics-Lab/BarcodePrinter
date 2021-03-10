@@ -104,19 +104,19 @@
 
                 <TextBlock x:Name="txbPrintersLbl" Text="Printers:"/>
 
-                <RadioButton x:Name="rdo610" GroupName="Printers" Content="610" Grid.Column="0" Grid.Row="1" VerticalContentAlignment="Center" HorizontalAlignment="Left" VerticalAlignment="Center" Checked="rdoPrinter_Checked"/>
+                <CheckBox x:Name="rdo610" Content="610" Grid.Column="0" Grid.Row="1" VerticalContentAlignment="Center" HorizontalAlignment="Left" VerticalAlignment="Center" Checked="rdoPrinter_Checked" Unchecked="rdoPrinter_Checked"/>
                 <Button x:Name="btnSettings610" HorizontalAlignment="Right" Grid.Column="1" Grid.Row="1" Click="btnSettings_Click" Margin="10" Width="15">
                     <Image Source="/Assets/Options.png" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
                 </Button>
-                <RadioButton x:Name="rdo220A" GroupName="Printers" Content="220 A" Grid.Column="0" Grid.Row="2" VerticalContentAlignment="Center" HorizontalAlignment="Left" VerticalAlignment="Center" Checked="rdoPrinter_Checked"/>
+                <CheckBox x:Name="rdo220A" Content="220 A" Grid.Column="0" Grid.Row="2" VerticalContentAlignment="Center" HorizontalAlignment="Left" VerticalAlignment="Center" Checked="rdoPrinter_Checked" Unchecked="rdoPrinter_Checked"/>
                 <Button x:Name="btnSettings220A" HorizontalAlignment="Right" Grid.Column="1" Grid.Row="2" Click="btnSettings_Click" Margin="10" Width="15">
                     <Image Source="/Assets/Options.png" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
                 </Button>
-                <RadioButton x:Name="rdo220B" GroupName="Printers" Content="220 B" Grid.Column="0"  Grid.Row="3" VerticalContentAlignment="Center" HorizontalAlignment="Left" VerticalAlignment="Center" Checked="rdoPrinter_Checked"/>
+                <CheckBox x:Name="rdo220B" Content="220 B" Grid.Column="0"  Grid.Row="3" VerticalContentAlignment="Center" HorizontalAlignment="Left" VerticalAlignment="Center" Checked="rdoPrinter_Checked" Unchecked="rdoPrinter_Checked"/>
                 <Button x:Name="btnSettings220B" HorizontalAlignment="Right" Grid.Column="1" Grid.Row="3" Click="btnSettings_Click" Margin="10" Width="15">
                     <Image Source="/Assets/Options.png" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
                 </Button>
-                <RadioButton x:Name="rdoUSB" GroupName="Printers" Content="USB - 410/420" Grid.Row="4" VerticalAlignment="Center" HorizontalAlignment="Left" Checked="rdoPrinter_Checked" Margin="0,0,5,0"/>
+                <CheckBox x:Name="rdoUSB" Content="USB - 410/420" Grid.Row="4" VerticalAlignment="Center" HorizontalAlignment="Left" Checked="rdoPrinter_Checked" Unchecked="rdoPrinter_Checked"/>
                 <Button x:Name="btnSettingsUSB" HorizontalAlignment="Right" Grid.Column="1" Grid.Row="4" Click="btnSettings_Click" Margin="10" Width="15">
                     <Image Source="/Assets/Options.png" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
                 </Button>
@@ -164,7 +164,7 @@
             </Viewbox>
 
             <Button x:Name="btnCancel" Content="Cancel Prints" IsEnabled="False" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Click="btnCancel_Click" Background="Red"/>
-            <Button x:Name="btnPrint" Content="Print" IsEnabled="False" Grid.Row="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Click="btnPrint_Click" Background="Green"/>
+            <Button x:Name="btnPrint" Content="Print" IsEnabled="True" Grid.Row="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Click="btnPrint_Click" Background="Green"/>
         </Grid>
    </Grid>
 </Window>

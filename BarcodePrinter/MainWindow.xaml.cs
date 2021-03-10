@@ -33,15 +33,16 @@ namespace BarcodePrinter
         private List<Zebra.Sdk.Comm.ConnectionA> _PrinterConnections;
         private List<Printer> APIPrinters;//list of printers pulled from API
         //private System.Threading.Thread _Monitor;
-        private PrinterSettings settings;//left, top, tear, options etc,
         List<Client> clients;//list of clients pulled from Oracle
         Client SelectedClient;//the client selected by user
         Customer selectedCustomer;//customer is the selectedClient, but stored in MDL db
         Repository dbCommands;
         int iStartNum = -1;
         private bool cancel = false;
+        private PrinterSettings settings;//left, top, tear, options etc,
         //private Timer _StatusTimer;
 
+       
         #endregion
 
         public MainWindow()
@@ -69,8 +70,7 @@ namespace BarcodePrinter
             //todo:remove in prod
             APIAccessor.SetAuth("b333m439", "");
             //APIAccessor.SetAuth(Environment.UserName, "pass");
-            APIPrinters = await APIAccessor.PrintersAccessor.GetAllPrintersAsync();
-
+                        
             Cursor = Cursors.Wait;
             //fill the grid with customers
             try
@@ -94,8 +94,9 @@ namespace BarcodePrinter
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void rdoPrinter_Checked(object sender, RoutedEventArgs e)
+        private async void rdoPrinter_Checked(object sender, RoutedEventArgs e)
         {
+            APIPrinters = await APIAccessor.PrintersAccessor.GetAllPrintersAsync();
             txtStatus.Text = "";
             _PrinterConnections.Clear();
             if (rdo610.IsChecked.HasValue && rdo610.IsChecked.Equals(true))
@@ -106,7 +107,7 @@ namespace BarcodePrinter
                 ckCutAtEnd.IsEnabled = true;
                 ckCutPerLabel.IsEnabled = true;
             }
-            else if ((rdo220A.IsChecked.HasValue && rdo220A.IsChecked.Equals(true)) || (rdo220B.IsChecked.HasValue && rdo220B.IsChecked.Equals(true)))
+            if ((rdo220A.IsChecked.HasValue && rdo220A.IsChecked.Equals(true)) || (rdo220B.IsChecked.HasValue && rdo220B.IsChecked.Equals(true)))
             {
                 attempt220Connection();//connect to 220
                 
@@ -114,7 +115,7 @@ namespace BarcodePrinter
                 ckCutAtEnd.IsEnabled = false;
                 ckCutPerLabel.IsEnabled = false;
             }
-            else if (rdoUSB.IsChecked.HasValue && rdoUSB.IsChecked.Equals(true))
+            if (rdoUSB.IsChecked.HasValue && rdoUSB.IsChecked.Equals(true))
             {
                 attemptUSBConnection();//connect to usb printers
                 
@@ -130,6 +131,15 @@ namespace BarcodePrinter
             //update ui
             txtStatus.Text = "Number Connected: " + _PrinterConnections.Count.ToString();
             btnPrint.IsEnabled = _PrinterConnections.Count > 0;
+
+            //show all printers in a grid
+            var p = new List<PrintJob>();
+            foreach (var conn in _PrinterConnections)
+                p.Add(new PrintJob(conn, settings));
+
+            grdPrinter.ItemsSource = null;
+            grdPrinter.Items.Clear();
+            grdPrinter.ItemsSource = p;
         }
 
         /// <summary>
@@ -143,31 +153,31 @@ namespace BarcodePrinter
             
             //attempt connection to all printers
             attempt610Connection();
-            if (_PrinterConnections.Count > 0)
-            {
-                rdo610.IsChecked = true;
-                return;
-            }
+            //if (_PrinterConnections.Count > 0)
+            //{
+            //    rdo610.IsChecked = true;
+            //    //return;
+            //}
             attempt220Connection();
-            if (_PrinterConnections.Count > 0)
-            {
-                if (_PrinterConnections[0].SimpleConnectionName.Contains("lbl-cv-174h-1"))
-                {
-                    rdo220A.IsChecked = true;
-                    return;
-                }
-                else if (_PrinterConnections[0].SimpleConnectionName.Contains("lbl-cv-174h-2"))
-                {
-                    rdo220B.IsChecked = true;
-                    return;
-                }
-            }
+            //if (_PrinterConnections.Count > 0)
+            //{
+            //    if (_PrinterConnections[0].SimpleConnectionName.Contains("174h-2"))
+            //    {
+            //        rdo220A.IsChecked = true;
+            //        //return;
+            //    }
+            //    else if (_PrinterConnections[0].SimpleConnectionName.Contains("174h-3"))
+            //    {
+            //        rdo220B.IsChecked = true;
+            //        //return;
+            //    }
+            //}
             attemptUSBConnection();
-            if (_PrinterConnections.Count > 0)
-            {
-                rdoUSB.IsChecked = true;
-                return;
-            }
+            //if (_PrinterConnections.Count > 0)
+            //{
+            //    rdoUSB.IsChecked = true;
+            //    //return;
+            //}
         }
 
         /// <summary>
@@ -310,15 +320,6 @@ namespace BarcodePrinter
                 catch (Exception) { _PrinterConnections.Remove(_PrinterConnections.LastOrDefault()); }
                 finally { Cursor = Cursors.Arrow; }
             }
-
-            //show all usb printers in a grid
-            var p = new List<PrintJob>();
-            foreach (var conn in _PrinterConnections)
-                p.Add(new PrintJob(conn, settings));
-
-            grdPrinter.ItemsSource = null;
-            grdPrinter.Items.Clear();
-            grdPrinter.ItemsSource = p;
         }
         
         #endregion
@@ -423,12 +424,9 @@ namespace BarcodePrinter
             }
 
             //show all settings
-            
             popCkRotate.IsChecked = printer.Rotate90;
             popTxbSelectedPrinter.Text = printer.PrinterName;
-
             FlipTopAndLeft();
-
             popLeft.Text = printer.LeftOffset.ToString();
             popTop.Text = printer.TopOffset.ToString();
             popDarkness.Text = printer.Density.ToString();
@@ -461,7 +459,7 @@ namespace BarcodePrinter
         {
             if (_PrinterConnections.Count == 0 || _PrinterConnections == null) //if there aren't any printers
             {
-                if (_PrinterConnections.Count == 0) { MessageBox.Show("No printers"); return; }//if still none, inform user
+                MessageBox.Show("No printers"); return;//inform user
             }
             foreach (Zebra.Sdk.Comm.ConnectionA printer in _PrinterConnections)//search printers
             {
@@ -591,9 +589,24 @@ namespace BarcodePrinter
                 return;
             }
 
+            //for printing on multiple printers
+            Queue<PrintJob> jobs = new Queue<PrintJob>();
+            foreach (Zebra.Sdk.Comm.ConnectionA Printer in _PrinterConnections)//loop through connections
+            {
+                jobs.Enqueue(new PrintJob(Printer, settings));//add to queue
+            }
+
             //get user confirmation
-            string confirm = string.Format("{0} labels will be printed for {1}. This will start at {2} and go through {3}. Is this correct?", iNumLabels, SelectedClient.Code, iStartNum, iStartNum + iNumLabels - 1);
-            var res = MessageBox.Show(confirm, "Confirm Printing", MessageBoxButton.YesNo);
+            StringBuilder confirm = new StringBuilder();
+            confirm.AppendLine(string.Format("{0} labels will be printed for {1}.", iNumLabels, SelectedClient.Code));
+            confirm.AppendLine(string.Format("This will start at {0} and go through {1}.", iStartNum, iStartNum + iNumLabels - 1));
+            confirm.AppendLine("Labels will be printed on:");
+            foreach(PrintJob pj in jobs)
+            {
+                confirm.AppendLine("\t" + pj.Identifier + ", ");
+            }
+            confirm.AppendLine("Is this Correct?");
+            var res = MessageBox.Show(confirm.ToString(), "Confirm Printing", MessageBoxButton.YesNo);
             if (res != MessageBoxResult.Yes) return;//if no, then cancel
 
             s = await APIAccessor.LabelAccessor.GetPrintLabelAsync(selectedCustomer.CustomerNumber);
@@ -603,12 +616,6 @@ namespace BarcodePrinter
                 await AddLabel();
             }
             
-            //for printing on multiple printers
-            Queue<PrintJob> jobs = new Queue<PrintJob>();
-            foreach (Zebra.Sdk.Comm.ConnectionA Printer in _PrinterConnections)//loop through connections
-            {
-                jobs.Enqueue(new PrintJob(Printer, settings));//add to queue
-            }
             
             if (jobs.Peek().PrintMainLabel(iCustNum, SelectedClient.Name))//try to print main label
             {
@@ -658,10 +665,10 @@ namespace BarcodePrinter
 
                 if (printed)//if printed successfully, tell user what we printed
                 {
-                    txtStatus.Text = "Printing Label: " + string.Format("{0:0000}-000-{1:000-000-000}", int.Parse(s.Substring(0, 4)), int.Parse(s.Substring(4)));
+                    txtStatus.Text = "Printing Label: " + string.Format("{0:0000}-{1:000-000-000-000}", int.Parse(s.Substring(0, 4)), int.Parse(s.Substring(4)));
                     txtStatus.Refresh();
                     s = await APIAccessor.LabelAccessor.GetPrintLabelAsync(SelectedClient.Code.Substring(1), true);
-                }
+                 }
                 else//otherwise show the error
                 {
                     MessageBox.Show(error + "\n Number of Labels updated. Press Print to reattempt");
