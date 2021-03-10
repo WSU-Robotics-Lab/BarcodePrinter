@@ -39,6 +39,7 @@ namespace BarcodePrinter
         Customer selectedCustomer;//customer is the selectedClient, but stored in MDL db
         Repository dbCommands;
         int iStartNum = -1;
+        private bool cancel = false;
         //private Timer _StatusTimer;
 
         #endregion
@@ -129,7 +130,6 @@ namespace BarcodePrinter
             //update ui
             txtStatus.Text = "Number Connected: " + _PrinterConnections.Count.ToString();
             btnPrint.IsEnabled = _PrinterConnections.Count > 0;
-            btnCancel.IsEnabled = btnPrint.IsEnabled;
         }
 
         /// <summary>
@@ -559,8 +559,6 @@ namespace BarcodePrinter
                 return;
             }
 
-            var s = await APIAccessor.LabelAccessor.GetPrintLabelAsync(SelectedClient.Code.Substring(1));//check the string
-            int lastNum;
             if (selectedCustomer == null)
             {
                 var customers = await APIAccessor.CustomerAccessor.GetAllCustomersAsync();
@@ -574,13 +572,15 @@ namespace BarcodePrinter
                 }
             }
 
+            var s = await APIAccessor.LabelAccessor.GetPrintLabelAsync(SelectedClient.Code.Substring(1));//check the string
+            int lastNum;
             if (s.ToUpper().Contains("STARTNUM") || s.ToUpper().Contains("ALL"))//need to add labels to db
             {
                 lastNum = await APIAccessor.BarcodeAccessor.GetLastBarcodeAsync(selectedCustomer.CustomerID) + 1;
             }
             else
             {
-                lastNum = int.Parse(s.Substring(4)) + 1;
+                lastNum = int.Parse(s.Substring(4));
             }
 
             int txtNum = int.Parse(txtStartingNum.Text);
@@ -596,9 +596,9 @@ namespace BarcodePrinter
             var res = MessageBox.Show(confirm, "Confirm Printing", MessageBoxButton.YesNo);
             if (res != MessageBoxResult.Yes) return;//if no, then cancel
 
-            var label = await APIAccessor.LabelAccessor.GetPrintLabelAsync(selectedCustomer.CustomerNumber);
+            s = await APIAccessor.LabelAccessor.GetPrintLabelAsync(selectedCustomer.CustomerNumber);
             
-            if (label.ToUpper().Contains("ALL") || label.ToUpper().Contains("SUPPLY"))
+            if (s.ToUpper().Contains("ALL") || s.ToUpper().Contains("SUPPLY"))
             {
                 await AddLabel();
             }
@@ -628,7 +628,8 @@ namespace BarcodePrinter
             btnSettings220B.IsEnabled = false;
             btnSettings610.IsEnabled = false;
             btnSettingsUSB.IsEnabled = false;
-            btnExit.IsEnabled = false;
+            btnCancel.IsEnabled = true;
+            btnPrint.IsEnabled = false;
 
             //TODO: queues need testing on location
             for (int i = 0; i < iNumLabels; i++)//loop through all labels
@@ -636,30 +637,30 @@ namespace BarcodePrinter
                 var p = jobs.Dequeue();//get the front job
 
                 //printing
-                string barcode = await APIAccessor.LabelAccessor.GetPrintLabelAsync(SelectedClient.Code.Substring(1));
+                s = await APIAccessor.LabelAccessor.GetPrintLabelAsync(SelectedClient.Code.Substring(1));
                 
-                if (barcode.ToUpper().Contains("ALL") && i < iNumLabels)
+                if (s.ToUpper().Contains("ALL") && i < iNumLabels)
                 {//we need to add the rest of the barcodes, to make up for an error
                     var r = await APIAccessor.LabelAccessor.PostCreateLabel(new API_Lib.Models.ProcedureModels.InputModels.CreateLabelInput(SelectedClient.Code.Substring(1), SelectedClient.Name, iStartNum + i, iNumLabels - i));
-                    barcode = await APIAccessor.LabelAccessor.GetPrintLabelAsync(SelectedClient.Code.Substring(1));//update barcode
+                    s = await APIAccessor.LabelAccessor.GetPrintLabelAsync(SelectedClient.Code.Substring(1));//update barcode
                 }
 
                 bool printed = false;
                 string error = "";
-                if (!IsLastNum(barcode))//if this is NOT the last barcode
+                if (!IsLastNum(s))//if this is NOT the last barcode
                 {
-                    printed = p.PrintIndividualLabels(barcode, out error);
+                    printed = p.PrintIndividualLabels(s, out error);
                 }
                 else//it is the last barcode, tell the printer
                 {
-                    printed = p.PrintIndividualLabels(barcode, out error, true);
+                    printed = p.PrintIndividualLabels(s, out error, true);
                 }
 
                 if (printed)//if printed successfully, tell user what we printed
                 {
-                    txtStatus.Text = "Printing Label: " + string.Format("{0:0000}-000-{1:000-000-000}", int.Parse(barcode.Substring(0, 4)), int.Parse(barcode.Substring(4)));
+                    txtStatus.Text = "Printing Label: " + string.Format("{0:0000}-000-{1:000-000-000}", int.Parse(s.Substring(0, 4)), int.Parse(s.Substring(4)));
                     txtStatus.Refresh();
-                    barcode = await APIAccessor.LabelAccessor.GetPrintLabelAsync(SelectedClient.Code.Substring(1), true);
+                    s = await APIAccessor.LabelAccessor.GetPrintLabelAsync(SelectedClient.Code.Substring(1), true);
                 }
                 else//otherwise show the error
                 {
@@ -669,6 +670,12 @@ namespace BarcodePrinter
                 }
 
                 jobs.Enqueue(p);//put the job on the back
+
+                if (cancel)
+                {
+                    txtNumLabels.Text = (iNumLabels - i).ToString();
+                    break;
+                }
             }
 
             await SetStartNum();
@@ -681,7 +688,9 @@ namespace BarcodePrinter
             btnSettings220B.IsEnabled = true;
             btnSettings610.IsEnabled = true;
             btnSettingsUSB.IsEnabled = true;
-            btnExit.IsEnabled = true;
+            btnCancel.IsEnabled = false;
+            btnPrint.IsEnabled = true;
+            cancel = false;
         }
 
         /// <summary>
@@ -702,6 +711,7 @@ namespace BarcodePrinter
                 txtStatus.Refresh();
                 Printer.Write(Encoding.ASCII.GetBytes(individualLabel.ToString()));
             }
+            cancel = true;
         }
 
         /// <summary>
@@ -836,7 +846,7 @@ namespace BarcodePrinter
                 }
                 else
                 {
-                    int num = int.Parse(s.Substring(4)) + 1;//add one for the next starting number
+                    int num = int.Parse(s.Substring(4));//add one for the next starting number
                     txtStartingNum.Text = num.ToString();
                 }
 

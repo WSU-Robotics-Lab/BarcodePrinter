@@ -162,6 +162,7 @@ namespace BarcodePrinter
             #if (!DEBUG)//don't send ZPL when debugging
                 connection.Write(Encoding.ASCII.GetBytes(MainLabel.ToString()));
             #endif
+                System.Threading.Thread.Sleep(15);//give 15 ms to allow printer to process
                 return true;
             }
             catch
@@ -288,6 +289,7 @@ namespace BarcodePrinter
                 string Errors = "";
                 try
                 {
+                    if (!connection.Connected) connection.Open();
                     Errors = Encoding.ASCII.GetString(connection.SendAndWaitForResponse(Encoding.ASCII.GetBytes(ErrorCheck.ToString()), 1000, 1000, ""));
                 }
                 catch (Exception e)
@@ -335,9 +337,11 @@ namespace BarcodePrinter
                     
                     //send command, if successful, return true
                     try {
+                        if (!connection.Connected) connection.Open();
                     #if !DEBUG//don't send ZPL when debugging
-                        connection.Write(Encoding.ASCII.GetBytes(individualLabel.ToString())); 
+                        connection.Write(Encoding.ASCII.GetBytes(individualLabel.ToString()));
                     #endif
+                        System.Threading.Thread.Sleep(15);//give 15 ms to allow printer to process
                         return true; 
                     }
                     catch (Exception e)

@@ -11,23 +11,34 @@
         Title="Barcode Printer" Height="400" Width="800"
         Loaded="Window_Loaded">
     <Grid>
-        <Grid.RowDefinitions>
-
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="*"/>
-
         </Grid.ColumnDefinitions>
 
-        <Viewbox Stretch="Uniform" Grid.Column="1" Grid.RowSpan="3">
+        <Grid Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto"/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
 
-            <Grid Grid.Column="3" Grid.RowSpan="3">
+            <Viewbox Stretch="Uniform">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+                    <TextBlock x:Name="txbClientSearch" VerticalAlignment="Stretch" HorizontalAlignment="Left" Text="Customer Search:" Margin="5,0,25,0"/>
+                    <TextBox x:Name="txtClientSearch" Grid.Row="1" VerticalContentAlignment="Center" HorizontalAlignment="Right" VerticalAlignment="Stretch" TextChanged="txtClientSearch_TextChanged" Width="90" Margin="25,0,0,0"/>
+                </Grid>
+            </Viewbox>
+            
+            <DataGrid x:Name="grdFoundclients" Grid.Row="1" Grid.RowSpan="3" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Margin="10,10,0,10" IsReadOnly="True" SelectedCellsChanged="grdFoundclients_SelectedCellsChanged"/>
+        </Grid>
+
+        <Viewbox Stretch="Uniform" Grid.Column="1" Margin="0,0,0,10">
+            <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
@@ -78,7 +89,7 @@
                                 <Label x:Name="popRateLbl" Grid.Row="3" Grid.Column="1" Content="Print Rate:"/>
                                 <TextBox x:Name="popRate" Grid.Row="4" Grid.Column="1" LostFocus="UxSettings_LostFocus"/>
 
-                                <CheckBox x:Name="popCkRotate" VerticalAlignment="Center" HorizontalAlignment="Center" Grid.Row="5" Grid.Column="1" Content="Rotate 90" IsChecked="False" Checked="ckOptions_Checked" Unchecked="ckOptions_Checked"/>
+                                <CheckBox x:Name="popCkRotate" VerticalAlignment="Center" HorizontalAlignment="Center" Grid.Row="5" Grid.Column="1" Grid.RowSpan="2" Content="Rotate 90" IsChecked="False" Checked="ckOptions_Checked" Unchecked="ckOptions_Checked"/>
 
                                 <RadioButton x:Name="rdoModeTransfer" GroupName="Mode" VerticalAlignment="Top" HorizontalAlignment="Stretch" Grid.Row="7" Content="Thermal Transfer" Checked="ckOptions_Checked"/>
                                 <RadioButton x:Name="rdoModeDirect" GroupName="Mode" VerticalAlignment="Center" HorizontalAlignment="Stretch" Grid.Row="7" Grid.Column="1" Content="Direct Thermal" Checked="ckOptions_Checked"/>
@@ -114,68 +125,46 @@
             </Grid>
         </Viewbox>
 
-        <Viewbox Stretch="Uniform" Grid.Column="3" Grid.Row="2">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                </Grid.RowDefinitions>
+        <Grid Grid.Column="2" Margin="0,0,10,10">
+            <Grid.RowDefinitions>
+                <RowDefinition MinHeight="300"/>
+                <RowDefinition/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            
+            <Viewbox Stretch="Uniform" VerticalAlignment="Stretch">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition MinWidth="201"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
 
-                <TextBlock x:Name="txbPrintOptionsLbl" Text="Print Options:"/>
-                <RadioButton GroupName="PrintOptions" x:Name="ckCutPerLabel" Content="Cut Each Label" Grid.Row="1" VerticalContentAlignment="Center" HorizontalAlignment="Stretch" VerticalAlignment="Center" Checked="ckOptions_Checked"/>
-                <RadioButton GroupName="PrintOptions" x:Name="ckCutAtEnd" Content="Cut At End" Grid.Row="2" VerticalContentAlignment="Center" HorizontalAlignment="Stretch" VerticalAlignment="Center" Checked="ckOptions_Checked"/>
-                <RadioButton GroupName="PrintOptions" x:Name="ckPeel" Content="Peel" Grid.Row="3" VerticalContentAlignment="Center" HorizontalAlignment="Stretch" VerticalAlignment="Center" Checked="ckOptions_Checked"/>
-                <RadioButton GroupName="PrintOptions" x:Name="ckTear" Content="Tear" Grid.Row="4" VerticalContentAlignment="Center" HorizontalAlignment="Stretch" VerticalAlignment="Center" Checked="ckOptions_Checked"/>
-            </Grid>
-        </Viewbox>
+                    <TextBlock Text="Number of Labels:" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                    <TextBox x:Name="txtNumLabels" Grid.Row="1" VerticalContentAlignment="Center" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" LostFocus="TextBox_LostFocus" IsEnabled="False"/>
+                    <TextBlock Text="Starting Number:" Grid.Row="2" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                    <TextBox x:Name="txtStartingNum" Grid.Row="3" HorizontalAlignment="Stretch" VerticalAlignment="Center" IsEnabled="False" LostFocus="TextBox_LostFocus"/>
+                    <TextBlock x:Name="txtStatus" HorizontalAlignment="Stretch" Grid.Row="4" VerticalAlignment="Top"/>
+                    <TextBlock x:Name="txbPrintOptionsLbl" Grid.Row="5" Text="Print Options:"/>
+                    <RadioButton GroupName="PrintOptions" x:Name="ckCutPerLabel" Content="Cut Each Label" Grid.Row="6" VerticalContentAlignment="Center" HorizontalAlignment="Stretch" VerticalAlignment="Center" Checked="ckOptions_Checked"/>
+                    <RadioButton GroupName="PrintOptions" x:Name="ckCutAtEnd" Content="Cut At End" Grid.Row="7" VerticalContentAlignment="Center" HorizontalAlignment="Stretch" VerticalAlignment="Center" Checked="ckOptions_Checked"/>
+                    <RadioButton GroupName="PrintOptions" x:Name="ckPeel" Content="Peel" Grid.Row="8" VerticalContentAlignment="Center" HorizontalAlignment="Stretch" VerticalAlignment="Center" Checked="ckOptions_Checked"/>
+                    <RadioButton GroupName="PrintOptions" x:Name="ckTear" Content="Tear" Grid.Row="9" VerticalContentAlignment="Center" HorizontalAlignment="Stretch" VerticalAlignment="Center" Checked="ckOptions_Checked"/>
+                </Grid>
+            </Viewbox>
 
-        <DataGrid x:Name="grdFoundclients" Grid.Row="1" Grid.RowSpan="3" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Margin="10,0,0,10" IsReadOnly="True" SelectedCellsChanged="grdFoundclients_SelectedCellsChanged"/>
-        <Viewbox Stretch="Uniform">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                </Grid.RowDefinitions>
-                <TextBlock x:Name="txbClientSearch" VerticalAlignment="Stretch" HorizontalAlignment="Left" Text="Customer Search:" Margin="5,0,25,0"/>
-                <TextBox x:Name="txtClientSearch" Grid.Row="1" VerticalContentAlignment="Center" HorizontalAlignment="Right" VerticalAlignment="Stretch" TextChanged="txtClientSearch_TextChanged" Width="90" Margin="25,0,5,0"/>
-            </Grid>
-        </Viewbox>
-        
-        <Viewbox Grid.Column="2" Stretch="Uniform" Grid.RowSpan="2">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                </Grid.RowDefinitions>
-                
-                <TextBlock Text="Number of Labels:" HorizontalAlignment="Left" VerticalAlignment="Center"/>
-                <TextBox x:Name="txtNumLabels" Grid.Row="1" VerticalContentAlignment="Center" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" LostFocus="TextBox_LostFocus" IsEnabled="False" Margin="0,0,50,0"/>
-                <TextBlock Text="Starting Number:" Grid.Row="2" HorizontalAlignment="Left" VerticalAlignment="Center"/>
-                <TextBox x:Name="txtStartingNum" Grid.Row="3" HorizontalAlignment="Stretch" VerticalAlignment="Center" IsEnabled="False" LostFocus="TextBox_LostFocus" Margin="0,0,50,0"/>
-                <TextBlock x:Name="txtStatus" HorizontalAlignment="Stretch" Grid.Row="4" VerticalAlignment="Top" Margin="0,10,50,0"/>
-            </Grid>
-        </Viewbox>
-
-        <Viewbox Grid.Column="1" Grid.Row="3" Stretch="Uniform" Grid.ColumnSpan="2" HorizontalAlignment="Right">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition/>
-                    <ColumnDefinition/>
-                    <ColumnDefinition/>
-                </Grid.ColumnDefinitions>
-                             
-                <Button x:Name="btnPrint" Content="Print" IsEnabled="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="10" Click="btnPrint_Click"/>
-                <Button x:Name="btnCancel" Content="Cancel Prints" IsEnabled="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="10" Grid.Column="1" Click="btnCancel_Click"/>
-                <Button x:Name="btnExit" Content="Exit" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="10" Grid.Column="2" Click="btnExit_Click" />
-                
-            </Grid>
-        </Viewbox>
-    </Grid>
+            <Button x:Name="btnCancel" Content="Cancel Prints" IsEnabled="False" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Click="btnCancel_Click" Background="Red"/>
+            <Button x:Name="btnPrint" Content="Print" IsEnabled="False" Grid.Row="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Click="btnPrint_Click" Background="Green"/>
+        </Grid>
+   </Grid>
 </Window>
