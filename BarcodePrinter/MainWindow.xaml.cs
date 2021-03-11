@@ -114,6 +114,10 @@ namespace BarcodePrinter
                 //220 doesn't have cutter
                 ckCutAtEnd.IsEnabled = false;
                 ckCutPerLabel.IsEnabled = false;
+                if ((bool)ckCutAtEnd.IsChecked || (bool)ckCutPerLabel.IsChecked)
+                {
+                    ckTear.IsChecked = true;
+                }
             }
             if (ckUSB.IsChecked.HasValue && ckUSB.IsChecked.Equals(true))
             {
@@ -634,7 +638,7 @@ namespace BarcodePrinter
             confirm.AppendLine("Labels will be printed on:");
             foreach(PrintJob pj in jobs)
             {
-                confirm.AppendLine("\t" + pj.Identifier + ", ");
+                confirm.AppendLine("\t" + pj.Identifier);
             }
             confirm.AppendLine("Is this Correct?");
             var res = MessageBox.Show(confirm.ToString(), "Confirm Printing", MessageBoxButton.YesNo);
@@ -697,15 +701,8 @@ namespace BarcodePrinter
                 {
                     txtStatus.Text = "Printing Label: " + string.Format("{0:0000}-{1:000-000-000-000}", int.Parse(s.Substring(0, 4)), int.Parse(s.Substring(4)));
                     txtStatus.Refresh();
-                    try
-                    {
-                        s = await APIAccessor.LabelAccessor.GetPrintLabelAsync(SelectedClient.Code.Substring(1), true);
-                    }
-                    catch (Exception ex)
-                    {
-                        s = await APIAccessor.LabelAccessor.GetPrintLabelAsync(SelectedClient.Code.Substring(1), true);
-                    }
-                 }
+                    s = await APIAccessor.LabelAccessor.GetPrintLabelAsync(SelectedClient.Code.Substring(1), true);
+                }
                 else//otherwise show the error
                 {
                     MessageBox.Show(error + "\n Number of Labels updated. Press Print to reattempt");
@@ -722,7 +719,7 @@ namespace BarcodePrinter
                 }
             }
 
-            await SetStartNum();
+            txtStartingNum.Text = (iStartNum + iNumLabels).ToString();
 
             ck220A.IsEnabled = true;
             ck220B.IsEnabled = true;
@@ -863,6 +860,10 @@ namespace BarcodePrinter
         {
             selectedCustomer = null;
             List<Customer> customers = await APIAccessor.CustomerAccessor.GetAllCustomersAsync();//get customers
+            if (customers == null)
+            {
+                return false;
+            }
             foreach (Customer c in customers)//look for customer
             {
                 if (int.Parse(c.CustomerNumber) == int.Parse(SelectedClient.Code.Substring(1)))//look for customer number
@@ -882,8 +883,8 @@ namespace BarcodePrinter
             }
             else//we found the customer
             {
-                var s = await APIAccessor.LabelAccessor.GetPrintLabelAsync(SelectedClient.Code.Substring(1));//check the string
-                
+                string s = await APIAccessor.LabelAccessor.GetPrintLabelAsync(SelectedClient.Code.Substring(1));//check the string
+                                
                 if (s.ToUpper().Contains("STARTNUM") || s.ToUpper().Contains("ALL"))//need to add labels to db
                 {
                     if (selectedCustomer == null) { return false; }//sometimes this is magically null

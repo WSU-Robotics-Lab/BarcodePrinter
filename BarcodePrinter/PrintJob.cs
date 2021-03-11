@@ -74,7 +74,7 @@ namespace BarcodePrinter
             if (PrinterInformation.Contains("610"))
                 Model = "ZT610";
             else if (PrinterInformation.Contains("220"))
-                Model = "220";
+                Model = "ZT220";
 
             //USB Printers
             else if (PrinterInformation.Contains("420"))
