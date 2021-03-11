@@ -162,10 +162,10 @@ namespace BarcodePrinter
             #if (!DEBUG)//don't send ZPL when debugging
                 connection.Write(Encoding.ASCII.GetBytes(MainLabel.ToString()));
             #endif
-                System.Threading.Thread.Sleep(15);//give 15 ms to allow printer to process
+                //System.Threading.Thread.Sleep(15);//give 15 ms to allow printer to process
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
                 return false;
             }

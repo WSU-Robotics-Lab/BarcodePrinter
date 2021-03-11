@@ -695,7 +695,14 @@ namespace BarcodePrinter
                 {
                     txtStatus.Text = "Printing Label: " + string.Format("{0:0000}-{1:000-000-000-000}", int.Parse(s.Substring(0, 4)), int.Parse(s.Substring(4)));
                     txtStatus.Refresh();
-                    s = await APIAccessor.LabelAccessor.GetPrintLabelAsync(SelectedClient.Code.Substring(1), true);
+                    try
+                    {
+                        s = await APIAccessor.LabelAccessor.GetPrintLabelAsync(SelectedClient.Code.Substring(1), true);
+                    }
+                    catch (Exception ex)
+                    {
+                        s = await APIAccessor.LabelAccessor.GetPrintLabelAsync(SelectedClient.Code.Substring(1), true);
+                    }
                  }
                 else//otherwise show the error
                 {
@@ -876,6 +883,7 @@ namespace BarcodePrinter
                 
                 if (s.ToUpper().Contains("STARTNUM") || s.ToUpper().Contains("ALL"))//need to add labels to db
                 {
+                    if (selectedCustomer == null) { return false; }
                     int num = await APIAccessor.BarcodeAccessor.GetLastBarcodeAsync(selectedCustomer.CustomerID) + 1;//add one for the next starting number
                     txtStartingNum.Text = num.ToString();
                 }
