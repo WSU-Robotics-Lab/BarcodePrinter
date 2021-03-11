@@ -377,7 +377,6 @@ namespace BarcodePrinter
                 if (!(bool)ck220B.IsChecked)
                 {
                     ck220B.IsChecked = true;
-
                 }
                 foreach (var p in APIPrinters)//find 22B base on name
                 {
@@ -393,29 +392,44 @@ namespace BarcodePrinter
                 if (!(bool)ckUSB.IsChecked)
                 {
                     ckUSB.IsChecked = true;
+                    ckPrinter_Checked(ckUSB, new RoutedEventArgs());
                 }
                 if (grdPrinter.SelectedItem == null)//if a printer isn't selected
                 {
+                    if (grdPrinter.Items.Count == 0)
+                    {
+                        MessageBox.Show("No USB Printers detected");
+                        return;
+                    }
                     if (grdPrinter.Items.Count == 1)//if there's only one, then select it
                     {
                         grdPrinter.SelectedIndex = 0;
                     }
                     else//otherwise tell user to pick one
                     {
-                        MessageBox.Show("Must select a printer from the grid");
-                        return;
+                        foreach (PrintJob pj in grdPrinter.Items)
+                        {
+                            if (pj.Model.Contains("420") || pj.Model.Contains("410"))
+                            {
+                                grdPrinter.SelectedIndex = grdPrinter.Items.IndexOf(pj);
+                                break;
+                            }
+                        }
+                        if (grdPrinter.SelectedItem == null)
+                        {
+                            MessageBox.Show("Must select a printer from the grid");
+                            return;
+                        }
                     }
                 }
-                else
+                
+                var temp = grdPrinter.SelectedItem as PrintJob;
+                foreach (Printer p in APIPrinters)
                 {
-                    var temp = grdPrinter.SelectedItem as PrintJob;
-                    foreach (Printer p in APIPrinters)
+                    if (p.SerialNumber == temp.Identifier)//find serial number in db printer list
                     {
-                        if (p.SerialNumber == temp.Identifier)//find serial number in db printer list
-                        {
-                            printer = p;
-                            break;
-                        }
+                        printer = p;
+                        break;
                     }
                 }
             }
