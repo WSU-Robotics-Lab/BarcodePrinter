@@ -209,8 +209,9 @@ namespace BarcodePrinter
                 _PrinterConnections.LastOrDefault().Open();
                 txtStatus.Text = "610 - Connection Open";
             }
-            catch (Exception)
+            catch (Exception ex)
             {//remove connection from list
+
                 _PrinterConnections.Remove(_PrinterConnections.LastOrDefault());
                 txtStatus.Text = "610 - Not Connected";
             }
@@ -579,7 +580,7 @@ namespace BarcodePrinter
                 var customers = await APIAccessor.CustomerAccessor.GetAllCustomersAsync();
                 foreach (Customer c in customers)
                 {
-                    if (c.CustomerNumber == SelectedClient.Code.Substring(1))
+                    if (int.Parse(c.CustomerNumber) == int.Parse(SelectedClient.Code.Substring(1)))
                     {
                         selectedCustomer = c;
                         break;
@@ -587,6 +588,20 @@ namespace BarcodePrinter
                 }
             }
 
+            if (selectedCustomer == null)
+            {
+                await AddLabel();
+                var customers = await APIAccessor.CustomerAccessor.GetAllCustomersAsync();
+                foreach (Customer c in customers)
+                {
+                    if (int.Parse(c.CustomerNumber) == int.Parse(SelectedClient.Code.Substring(1)))
+                    {
+                        selectedCustomer = c;
+                        break;
+                    }
+                }
+                
+            }
             var s = await APIAccessor.LabelAccessor.GetPrintLabelAsync(SelectedClient.Code.Substring(1));//check the string
             int lastNum;
             if (s.ToUpper().Contains("STARTNUM") || s.ToUpper().Contains("ALL"))//need to add labels to db
