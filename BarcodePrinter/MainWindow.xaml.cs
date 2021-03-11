@@ -29,7 +29,7 @@ namespace BarcodePrinter
     {
         #region fields
 
-        private string _Version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
+        private string _Version = "1.0.0.0";
         private List<Zebra.Sdk.Comm.ConnectionA> _PrinterConnections;
         private List<Printer> APIPrinters;//list of printers pulled from API
         //private System.Threading.Thread _Monitor;
@@ -64,12 +64,9 @@ namespace BarcodePrinter
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private async void Window_Loaded(object sender, RoutedEventArgs e)
+        private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            //read in customers and add to grid
-            //todo:remove in prod
-            APIAccessor.SetAuth("b333m439", "");
-            //APIAccessor.SetAuth(Environment.UserName, "pass");
+            APIAccessor.SetAuth(Environment.UserName, "pass");//set the authorization to whoever is logged in
                         
             Cursor = Cursors.Wait;
             //fill the grid with customers
