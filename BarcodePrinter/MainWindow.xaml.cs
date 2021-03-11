@@ -788,14 +788,15 @@ namespace BarcodePrinter
         /// </summary>
         private async void GetCustomers()
         {
-            foreach (Customer c in await APIAccessor.CustomerAccessor.GetAllCustomersAsync())
-            {
-                clients.Add(new Client(c.CustomerName, "C" + c.CustomerNumber));
-            }
-
-            if (clients.Count == 0)
+            var customers = await APIAccessor.CustomerAccessor.GetAllCustomersAsync();
+            if (customers == null)
             {
                 MessageBox.Show("No customers found");
+                return;
+            }
+            foreach (Customer c in customers)
+            {
+                clients.Add(new Client(c.CustomerName, "C" + c.CustomerNumber));
             }
 
             grdFoundclients.ItemsSource = clients;
