@@ -58,7 +58,7 @@
     <ApplicationIcon>Barcode.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Publish|AnyCPU'">
-    <OutputPath>M:\Applications\Label Printer\Current\</OutputPath>
+    <OutputPath>M:\Applications\Label Printer\V1.0\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <Optimize>true</Optimize>
     <PlatformTarget>AnyCPU</PlatformTarget>

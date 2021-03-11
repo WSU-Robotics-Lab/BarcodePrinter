@@ -64,11 +64,12 @@ namespace BarcodePrinter
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void Window_Loaded(object sender, RoutedEventArgs e)
+        private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
             APIAccessor.SetAuth(Environment.UserName, "pass");//set the authorization to whoever is logged in
-                        
+            
             Cursor = Cursors.Wait;
+            
             //fill the grid with customers
             try
             {//from oracle
@@ -77,7 +78,7 @@ namespace BarcodePrinter
             catch
             {//from MDL db
                 MessageBox.Show("Unable to retrieve customers from Oracle database.\nShowing previous Customers");
-                GetCustomers();
+                await GetCustomers();
             }
             Cursor = Cursors.Arrow;
         }
@@ -103,6 +104,7 @@ namespace BarcodePrinter
                 
                 //enable all checkboxes
                 ckCutAtEnd.IsEnabled = true;
+                ckCutAtEnd.IsChecked = true;
                 ckCutPerLabel.IsEnabled = true;
             }
             if ((ck220A.IsChecked.HasValue && ck220A.IsChecked.Equals(true)) || (ck220B.IsChecked.HasValue && ck220B.IsChecked.Equals(true)))
@@ -786,7 +788,7 @@ namespace BarcodePrinter
         /// <summary>
         /// get customers from MDL db
         /// </summary>
-        private async void GetCustomers()
+        private async Task GetCustomers()
         {
             foreach (Customer c in await APIAccessor.CustomerAccessor.GetAllCustomersAsync())
             {
@@ -872,7 +874,7 @@ namespace BarcodePrinter
             if (selectedCustomer == null)//didn't find it
             {//inform user, prompt to enter starting barcode
                 MessageBox.Show("Customer not listed in database:\nStarting barcode is needed be added to database.");
-                txtStartingNum.Text = "0";
+                txtStartingNum.Text = "1";
                 txtStartingNum.Focus();
                 txtStartingNum.SelectAll();
                 return false;
