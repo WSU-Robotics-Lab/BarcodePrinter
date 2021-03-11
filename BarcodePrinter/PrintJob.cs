@@ -1,5 +1,5 @@
 ﻿#define DEBUG
-#undef DEBUG
+//#undef DEBUG
 
 using System;
 using System.Linq;
@@ -314,7 +314,7 @@ namespace BarcodePrinter
                     int code = int.Parse(barcode.Substring(4));
                     
                     string sNumWDashes = String.Format("{0,0:0000}-{1,0:000-000-000-000}", custNum, code);//for readable number
-                    string sNumOnly = String.Format("{0,0:0000}{1,0:000000000}", custNum, code);//value for barcode image
+                    string sNumOnly = String.Format("{0,0:0000}{1,0:000000000000}", custNum, code);//value for barcode image
 
                     //build printer command
                     StringBuilder individualLabel = new StringBuilder();
