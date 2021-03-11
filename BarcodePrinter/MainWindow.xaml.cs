@@ -883,7 +883,7 @@ namespace BarcodePrinter
                 
                 if (s.ToUpper().Contains("STARTNUM") || s.ToUpper().Contains("ALL"))//need to add labels to db
                 {
-                    if (selectedCustomer == null) { return false; }
+                    if (selectedCustomer == null) { return false; }//sometimes this is magically null
                     int num = await APIAccessor.BarcodeAccessor.GetLastBarcodeAsync(selectedCustomer.CustomerID) + 1;//add one for the next starting number
                     txtStartingNum.Text = num.ToString();
                 }
