@@ -42,7 +42,6 @@ namespace BarcodePrinter
         private PrinterSettings settings;//left, top, tear, options etc,
         //private Timer _StatusTimer;
 
-       
         #endregion
 
         public MainWindow()
@@ -66,8 +65,8 @@ namespace BarcodePrinter
         /// <param name="e"></param>
         private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            APIAccessor.SetAuth(Environment.UserName, "pass");//set the authorization to whoever is logged in
-            
+            //APIAccessor.SetAuth(Environment.UserName, "pass");//set the authorization to whoever is logged in
+            APIAccessor.SetAuth("b333m439", "pass");
             Cursor = Cursors.Wait;
             
             //fill the grid with customers
@@ -195,14 +194,8 @@ namespace BarcodePrinter
             grdPrinter.Items.Clear(); 
             Printer printer = null;
 
-            foreach (Printer p in APIPrinters)//find 610 in printers list
-            {
-                if (p.ProductName.Contains("610"))
-                {
-                    printer = p;
-                    break;
-                }
-            }
+            printer = APIPrinters.FirstOrDefault(prtr => prtr.ProductName.Contains("610"));//find the printer in the db list
+                                   
             try
             {//attempt connections to printer using found hostname
                 txtStatus.Text = "610 - Trying to Connect";
@@ -232,15 +225,9 @@ namespace BarcodePrinter
             grdPrinter.ItemsSource = null;
             grdPrinter.Items.Clear();
             Printer printer = null;
-            foreach(Printer p in APIPrinters)//find the one we're looking for
-            {
-                if (p.ProductName.Contains("220") && p.PrinterName.Contains("2"))//printer A
-                {
-                    printer = p;
-                    break;
-                }
-            }
             
+            printer = APIPrinters.FirstOrDefault(prtr => prtr.ProductName.Contains("220") && prtr.PrinterName.Contains("2"));//find the printer in the db list
+                                   
             try
             {//attempt printer connection
                 txtStatus.Text = "220 - Trying to Connect-A";
@@ -253,15 +240,8 @@ namespace BarcodePrinter
             catch (Exception) { _PrinterConnections.Remove(_PrinterConnections.LastOrDefault()); }
             finally { Cursor = Cursors.Arrow; }
 
-            foreach (Printer p in APIPrinters)
-            {
-                if (p.ProductName.Contains("220") && p.PrinterName.Contains("3"))//printer B
-                {
-                    printer = p;
-                    break;
-                }
-            }
-
+            printer = APIPrinters.FirstOrDefault(prtr => prtr.ProductName.Contains("220") && prtr.PrinterName.Contains("3"));//find the printer in the db list
+            
             try
             {
                 txtStatus.Text = "220 - Trying to Connect-B";
@@ -306,20 +286,14 @@ namespace BarcodePrinter
                     if (!APIPrinters.Any(x => x.SerialNumber == pj.Identifier))//see if we found this printer in the db
                     {
                         //if not, add printer to db
-                        await APIAccessor.PrintersAccessor.PostPrinterAsync(new Printer(0, pj.Identifier, "USB" + (APIPrinters.Count + 1).ToString(), -10, 150, 60, 1, 16, "MT", 406, 210, null, false, null, pj.Model, false));
+                        var newP = new Printer(0, pj.Identifier, "USB" + (APIPrinters.Count + 1).ToString(), -10, 150, 60, 1, 16, "MT", 406, 210, null, false, null, pj.Model, false);
+                        await APIAccessor.PrintersAccessor.PostPrinterAsync(newP);
                         APIPrinters = await APIAccessor.PrintersAccessor.GetAllPrintersAsync();//update list
                     }
                     else
                     {//otherwise
-                        foreach(Printer prtr in APIPrinters)//find the printer in the db list
-                        {
-                            if (prtr.SerialNumber == pj.Identifier)//set printer settings
-                            {
-                                printer = prtr;
-                                SetPrinterSettings(prtr);
-                                break;
-                            }
-                        }
+                        printer = APIPrinters.FirstOrDefault(prtr => prtr.SerialNumber == pj.Identifier);//find the printer in the db list
+                        SetPrinterSettings(printer);//set printer settings
                     }
                 }
                 catch (Exception) { _PrinterConnections.Remove(_PrinterConnections.LastOrDefault()); }
@@ -350,15 +324,8 @@ namespace BarcodePrinter
                     ck610.IsChecked = true;
                 }
 
-                foreach (var p in APIPrinters)//find 610 printer in db list
-                {
-                    if (p.ProductName.Contains("610"))//set the printer
-                    {
-                        printer = p;
-                        break;
-                    }
-                }
-                
+                printer = APIPrinters.FirstOrDefault(prtr => prtr.ProductName.Contains("610"));
+                                
             }
             if (btn.Name.Contains("220A"))//show 220A setting values
             {
@@ -367,14 +334,8 @@ namespace BarcodePrinter
                     ck220A.IsChecked = true;
                 }
 
-                foreach (var p in APIPrinters)//find 220A based on name
-                {
-                    if (p.PrinterName.Contains("174h-2"))
-                    {
-                        printer = p;
-                        break;
-                    }
-                }
+                printer = APIPrinters.FirstOrDefault(prtr => prtr.PrinterName.Contains("174h-2"));
+                
             }
             if (btn.Name.Contains("220B"))//show 220B setting values
             {
@@ -382,43 +343,39 @@ namespace BarcodePrinter
                 {
                     ck220B.IsChecked = true;
                 }
-                foreach (var p in APIPrinters)//find 22B base on name
-                {
-                    if (p.PrinterName.Contains("174h-3"))
-                    {
-                        printer = p;
-                        break;
-                    }
-                }
+
+                printer = APIPrinters.FirstOrDefault(prtr => prtr.PrinterName.Contains("174h-3"));
+                
             }
             if (btn.Name.Contains("USB"))//find usb printer in db
             {
                 if (!(bool)ckUSB.IsChecked)
                 {
                     ckUSB.IsChecked = true;
-                    ckPrinter_Checked(ckUSB, new RoutedEventArgs());
                 }
+                
                 if (grdPrinter.SelectedItem == null)//if a printer isn't selected
                 {
                     if (grdPrinter.Items.Count == 0)
                     {
-                        MessageBox.Show("No USB Printers detected");
+                        MessageBox.Show("No USB Printers selected or none available");
                         return;
                     }
+
                     if (grdPrinter.Items.Count == 1)//if there's only one, then select it
                     {
                         grdPrinter.SelectedIndex = 0;
                     }
                     else//otherwise tell user to pick one
                     {
-                        foreach (PrintJob pj in grdPrinter.Items)
-                        {
-                            if (pj.Model.Contains("420") || pj.Model.Contains("410"))
-                            {
-                                grdPrinter.SelectedIndex = grdPrinter.Items.IndexOf(pj);
-                                break;
-                            }
-                        }
+                        //foreach (PrintJob pj in grdPrinter.Items)
+                        //{
+                        //    if (pj.Model.Contains("420") || pj.Model.Contains("410"))
+                        //    {
+                        //        grdPrinter.SelectedIndex = grdPrinter.Items.IndexOf(pj);
+                        //        break;
+                        //    }
+                        //}
                         if (grdPrinter.SelectedItem == null)
                         {
                             MessageBox.Show("Must select a printer from the grid");
@@ -428,14 +385,8 @@ namespace BarcodePrinter
                 }
                 
                 var temp = grdPrinter.SelectedItem as PrintJob;
-                foreach (Printer p in APIPrinters)
-                {
-                    if (p.SerialNumber == temp.Identifier)//find serial number in db printer list
-                    {
-                        printer = p;
-                        break;
-                    }
-                }
+                printer = APIPrinters.FirstOrDefault(prtr => prtr.SerialNumber == temp.Identifier);
+                
             }
 
             if (printer == null)
@@ -478,10 +429,7 @@ namespace BarcodePrinter
         /// <param name="e"></param>
         private void popBtnTestPrint_Click(object sender, RoutedEventArgs e)
         {
-            if (_PrinterConnections.Count == 0 || _PrinterConnections == null) //if there aren't any printers
-            {
-                MessageBox.Show("No printers"); return;//inform user
-            }
+            
             foreach (Zebra.Sdk.Comm.ConnectionA printer in _PrinterConnections)//search printers
             {
                 //update settings
@@ -497,7 +445,7 @@ namespace BarcodePrinter
                 else if ((bool)rdoModeDirect.IsChecked)
                     settings.Mode = "DT";
                 
-                //print test label 1234-000-00123456
+                //print test label 1234-000-000-123-456
                 PrintJob p = new PrintJob(printer, settings);
                 p.PrintTestLabel(out string error);
 
@@ -513,33 +461,29 @@ namespace BarcodePrinter
         /// <param name="e"></param>
         private async void popBtnSave_Click(object sender, RoutedEventArgs e)
         {
-            foreach(var p in APIPrinters)//find printer in list
+            var p = APIPrinters.LastOrDefault(prtr => prtr.PrinterName == popTxbSelectedPrinter.Text);//get printer
+            
+            //update settings
+            p.Density = int.Parse(popDarkness.Text);
+            p.LeftOffset = int.Parse(popLeft.Text);
+            p.TopOffset = int.Parse(popTop.Text);
+            p.Rate = int.Parse(popRate.Text);
+            p.TearOffset = int.Parse(popTear.Text);
+            p.Rotate90 = (bool)popCkRotate.IsChecked;
+
+            if ((bool)rdoModeDirect.IsChecked)
+                p.Mode = "DT";
+            else if ((bool)rdoModeTransfer.IsChecked)
+                p.Mode = "TT";
+
+            //update db values
+            if (await APIAccessor.PrintersAccessor.PostPrinterAsync(p))
             {
-                if (popTxbSelectedPrinter.Text == p.PrinterName)//
-                {
-                    //update settings
-                    p.Density = int.Parse(popDarkness.Text);
-                    p.LeftOffset = int.Parse(popLeft.Text);
-                    p.TopOffset = int.Parse(popTop.Text);
-                    p.Rate = int.Parse(popRate.Text);
-                    p.TearOffset = int.Parse(popTear.Text);
-                    p.Rotate90 = (bool)popCkRotate.IsChecked;
-
-                    if ((bool)rdoModeDirect.IsChecked)
-                        p.Mode = "DT";
-                    else if ((bool)rdoModeTransfer.IsChecked)
-                        p.Mode = "TT";
-
-                    //update db values
-                    if (await APIAccessor.PrintersAccessor.PostPrinterAsync(p))
-                    {
-                        txtStatus.Text = "Printer settings updated";
-                    }
-                    else
-                    {
-                        MessageBox.Show("Problem updating printer settings");
-                    }
-                }
+                txtStatus.Text = "Printer settings updated";
+            }
+            else
+            {
+                MessageBox.Show("Problem updating printer settings");
             }
         }
         
@@ -580,31 +524,11 @@ namespace BarcodePrinter
 
             if (selectedCustomer == null)
             {
-                var customers = await APIAccessor.CustomerAccessor.GetAllCustomersAsync();
-                foreach (Customer c in customers)
-                {
-                    if (int.Parse(c.CustomerNumber) == int.Parse(SelectedClient.Code.Substring(1)))
-                    {
-                        selectedCustomer = c;
-                        break;
-                    }
-                }
-            }
-
-            if (selectedCustomer == null)
-            {
                 await AddLabel();
                 var customers = await APIAccessor.CustomerAccessor.GetAllCustomersAsync();
-                foreach (Customer c in customers)
-                {
-                    if (int.Parse(c.CustomerNumber) == int.Parse(SelectedClient.Code.Substring(1)))
-                    {
-                        selectedCustomer = c;
-                        break;
-                    }
-                }
-                
+                selectedCustomer = customers.FirstOrDefault(customer => int.Parse(customer.CustomerNumber) == int.Parse(SelectedClient.Code.Substring(1)));
             }
+
             var s = await APIAccessor.LabelAccessor.GetPrintLabelAsync(SelectedClient.Code.Substring(1));//check the string
             int lastNum;
             if (s.ToUpper().Contains("STARTNUM") || s.ToUpper().Contains("ALL"))//need to add labels to db
@@ -720,7 +644,7 @@ namespace BarcodePrinter
             }
 
             txtStartingNum.Text = (iStartNum + iNumLabels).ToString();
-
+            txtNumLabels.Text = "";
             ck220A.IsEnabled = true;
             ck220B.IsEnabled = true;
             ck610.IsEnabled = true;
@@ -756,13 +680,12 @@ namespace BarcodePrinter
         }
 
         /// <summary>
-        /// close the app
+        /// close all printer connections, and exit application
         /// </summary>
-        /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void btnExit_Click(object sender, RoutedEventArgs e)
+        protected override void OnClosed(EventArgs e)
         {
-            //_Monitor.Abort(); 
+            base.OnClosed(e);
             foreach (Zebra.Sdk.Comm.ConnectionA Printer in _PrinterConnections) Printer.Close();
             Application.Current.Shutdown();
         }
@@ -1046,13 +969,7 @@ namespace BarcodePrinter
             grdFoundclients.ItemsSource = null;
             grdFoundclients.Items.Clear();
             string txt = (sender as TextBox).Text.ToUpper();
-            List<Client> found = new List<Client>();
-            foreach (Client c in clients)
-            {
-                if (c.Name.ToUpper().Contains(txt) || c.Code.ToUpper().Contains(txt))
-                    found.Add(c);
-            }
-            grdFoundclients.ItemsSource = found;
+            grdFoundclients.ItemsSource = clients.Where(client => client.Name.ToUpper().Contains(txt) || client.Code.ToUpper().Contains(txt));
         }
 
         /// <summary>

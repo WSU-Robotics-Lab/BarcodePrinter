@@ -1,5 +1,5 @@
 ﻿#define DEBUG
-#undef DEBUG
+//#undef DEBUG
 
 using System;
 using System.Linq;
@@ -69,8 +69,26 @@ namespace BarcodePrinter
             QueryPrinter.AppendLine("~HI");
             QueryPrinter.AppendLine("^XZ");
 
-            //set model
-            string PrinterInformation = Encoding.ASCII.GetString(connection.SendAndWaitForResponse(Encoding.ASCII.GetBytes(QueryPrinter.ToString()), 1000, 1000, ""));
+            string PrinterInformation = "";
+            int attempt = 0;
+            while (attempt < 10)
+            {
+                attempt++;
+                try
+                {
+                    //set model
+                    PrinterInformation = Encoding.ASCII.GetString(connection.SendAndWaitForResponse(Encoding.ASCII.GetBytes(QueryPrinter.ToString()), 1000, 1000, ""));
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    if (attempt == 10)
+                    {
+                        throw ex;
+                    }
+                }
+            }
+
             if (PrinterInformation.Contains("610"))
                 Model = "ZT610";
             else if (PrinterInformation.Contains("220"))
@@ -87,7 +105,7 @@ namespace BarcodePrinter
         /// Print the barcode label for the Order
         /// _________________________
         /// |                       |
-        /// |   Barcode    CUST     |
+        /// |   Barcode  CUST name  |
         /// |              1234     |
         /// |_______________________|
         /// </summary>
