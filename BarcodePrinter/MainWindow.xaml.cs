@@ -65,8 +65,7 @@ namespace BarcodePrinter
         /// <param name="e"></param>
         private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            //APIAccessor.SetAuth(Environment.UserName, "pass");//set the authorization to whoever is logged in
-            APIAccessor.SetAuth("b333m439", "pass");
+            APIAccessor.SetAuth(Environment.UserName, "pass");//set the authorization to whoever is logged in
             Cursor = Cursors.Wait;
             
             //fill the grid with customers
