@@ -65,7 +65,8 @@ namespace BarcodePrinter
         /// <param name="e"></param>
         private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            APIAccessor.SetAuth(Environment.UserName, "pass");//set the authorization to whoever is logged in
+            //APIAccessor.SetAuth(Environment.UserName, "pass");//set the authorization to whoever is logged in
+            APIAccessor.SetAuth("b333m439", "pass");
             Cursor = Cursors.Wait;
             
             //fill the grid with customers
@@ -132,7 +133,8 @@ namespace BarcodePrinter
 
             //update ui
             txtStatus.Text = "Number Connected: " + _PrinterConnections.Count.ToString();
-            btnPrint.IsEnabled = _PrinterConnections.Count > 0;
+            btnPrintCustomerLabel.IsEnabled = _PrinterConnections.Count > 0;
+            btnPrintIndividualLabels.IsEnabled = _PrinterConnections.Count > 0;
 
             //show all printers in a grid
             var p = new List<PrintJob>();
@@ -594,7 +596,8 @@ namespace BarcodePrinter
             btnSettings610.IsEnabled = false;
             btnSettingsUSB.IsEnabled = false;
             btnCancel.IsEnabled = true;
-            btnPrint.IsEnabled = false;
+            btnPrintCustomerLabel.IsEnabled = false;
+            btnPrintIndividualLabels.IsEnabled = false;
 
             for (int i = 0; i < iNumLabels; i++)//loop through all labels
             {
@@ -653,8 +656,8 @@ namespace BarcodePrinter
             btnSettings610.IsEnabled = true;
             btnSettingsUSB.IsEnabled = true;
             btnCancel.IsEnabled = false;
-            btnPrint.IsEnabled = true;
-            cancel = false;
+            btnPrintCustomerLabel.IsEnabled = true;
+            btnPrintIndividualLabels.IsEnabled = true;
         }
 
         /// <summary>
@@ -782,10 +785,11 @@ namespace BarcodePrinter
         {
             selectedCustomer = null;
             List<Customer> customers = await APIAccessor.CustomerAccessor.GetAllCustomersAsync();//get customers
-            if (customers == null)
+            if (customers == null || SelectedClient == null)
             {
                 return false;
             }
+            
             foreach (Customer c in customers)//look for customer
             {
                 if (int.Parse(c.CustomerNumber) == int.Parse(SelectedClient.Code.Substring(1)))//look for customer number
@@ -1025,6 +1029,24 @@ namespace BarcodePrinter
         }
 
         #endregion
+
+        private async void btnPrintCustomerLabel_Click(object sender, RoutedEventArgs e)
+        {
+            if (SelectedClient == null)
+            {
+                MessageBox.Show("Must select a Client first");
+                return;
+            }
+            
+            if (selectedCustomer == null)
+            {
+                var customers = await APIAccessor.CustomerAccessor.GetAllCustomersAsync();
+                selectedCustomer = customers.FirstOrDefault(customer => int.Parse(customer.CustomerNumber) == int.Parse(SelectedClient.Code.Substring(1)));
+            }
+
+            var custPrint = new PrintJob(_PrinterConnections[0], settings);
+            custPrint.PrintMainLabel(int.Parse(selectedCustomer.CustomerNumber), selectedCustomer.CustomerName);
+        }
     }
 }
 public static class ExtensionMethods
