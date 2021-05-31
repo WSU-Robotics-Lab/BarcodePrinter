@@ -346,6 +346,53 @@ namespace BarcodePrinter
 
         #endregion
 
+        #region User
+
+        /// <summary>
+        /// for making requests to Users table through API
+        /// </summary>
+        public static class UserAccessor 
+        {
+            private static string url = AllRoutes.UsersRoutes.FullURL;//url to User routes through API
+
+            /// <summary>
+            /// Get single row from Users table
+            /// </summary>
+            /// <param name="userID">primary key for row to be returned</param>
+            /// <returns>User object</returns>
+            public static async Task<User> GetUserAsync(int userID)
+            {
+                return await Get<User>(url, userID);
+            }
+
+            /// <summary>
+            /// Get all rows from Users table
+            /// </summary>
+            /// <returns>List of User objects</returns>
+            public static async Task<List<User>> GetAllUsersAsync()
+            {
+                return await Get<List<User>>(url + AllRoutes.All);
+            }
+
+            /// <summary>
+            /// Create a new user in the User table
+            /// </summary>
+            /// <param name="user">user to be added to the table</param>
+            /// <returns>Primary key of entered row</returns>
+            public static async Task<int> PostCreateUser(User user)
+            {
+                return (int)await Post<User, int>(url, user);
+            }
+
+            public static async Task<bool> CheckUserExists(string username)
+            {
+                //TODO: test this
+                return (bool)await Get<bool>(url + AllRoutes.Exists);
+            }
+        }
+
+        #endregion
+
         #region Unused
         
         #region Equipments
@@ -656,46 +703,6 @@ namespace BarcodePrinter
             public static async Task<List<Station>> GetAllStationsAsync()
             {
                 return await Get<List<Station>>(url + AllRoutes.All);
-            }
-        }
-
-        #endregion
-        #region User
-
-        /// <summary>
-        /// for making requests to Users table through API
-        /// </summary>
-        public static class UserAccessor 
-        {
-            private static string url = AllRoutes.UsersRoutes.FullURL;//url to User routes through API
-
-            /// <summary>
-            /// Get single row from Users table
-            /// </summary>
-            /// <param name="userID">primary key for row to be returned</param>
-            /// <returns>User object</returns>
-            public static async Task<User> GetUserAsync(int userID)
-            {
-                return await Get<User>(url, userID);
-            }
-
-            /// <summary>
-            /// Get all rows from Users table
-            /// </summary>
-            /// <returns>List of User objects</returns>
-            public static async Task<List<User>> GetAllUsersAsync()
-            {
-                return await Get<List<User>>(url + AllRoutes.All);
-            }
-
-            /// <summary>
-            /// Create a new user in the User table
-            /// </summary>
-            /// <param name="user">user to be added to the table</param>
-            /// <returns>Primary key of entered row</returns>
-            public static async Task<int> PostCreateUser(User user)
-            {
-                return (int)await Post<User, int>(url, user);
             }
         }
 

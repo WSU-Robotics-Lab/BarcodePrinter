@@ -65,8 +65,43 @@ namespace BarcodePrinter
         /// <param name="e"></param>
         private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            bool userExists = false;
+            //TODO: test API call
+            try
+            {
+                userExists = await APIAccessor.UserAccessor.CheckUserExists(Environment.UserName);
+            }
+            catch(Exception)
+            {
+                throw;
+            }
+
+            //TODO: test user check
+            if (!userExists)
+            {
+                var res = MessageBox.Show("This user does not currently have acceess to this application. Do you want to request access?", "Access Denied", MessageBoxButton.YesNo);
+                if (res == MessageBoxResult.Yes)
+                {
+                    //TODO: test email sending
+                    //send email to Bethany with users name and username.
+                    System.Net.Mail.MailMessage mailMessage = new System.Net.Mail.MailMessage("mdl.wichita.edu", "bweddle@niar.wichita.edu");
+                    mailMessage.To.Add("mdrummond@niar.wichita.edu");
+
+                    StringBuilder MessageBody = new StringBuilder();
+                    MessageBody.AppendLine("MDL Database Administrator,");
+                    MessageBody.AppendLine(string.Format("{0} has requested access to the Barcode Printer application.", Name));
+                    MessageBody.AppendLine(string.Format("username is {0}", Environment.UserName));
+                    MessageBody.AppendLine(string.Format("Sent {0}, from Barcode Printer.", DateTime.Now));
+                    mailMessage.ReplyToList.Add(string.Format("{0}@wichita.edu", Environment.UserName));
+                    mailMessage.Subject = "MDL Barcode Printer Application Access Request";
+                    
+                    mailMessage.Body = MessageBody.ToString().Replace(Environment.NewLine, "<br />");
+                    System.Net.Mail.SmtpClient smtpClient = new System.Net.Mail.SmtpClient("smtp.wichita.edu");
+
+                    smtpClient.Send(mailMessage);
+                }
+            }
             APIAccessor.SetAuth(Environment.UserName, "pass");//set the authorization to whoever is logged in
-            
             Cursor = Cursors.Wait;
             
             //fill the grid with customers
