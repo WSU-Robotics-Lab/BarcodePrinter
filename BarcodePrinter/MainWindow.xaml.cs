@@ -99,6 +99,7 @@ namespace BarcodePrinter
                     System.Net.Mail.SmtpClient smtpClient = new System.Net.Mail.SmtpClient("smtp.wichita.edu");
 
                     smtpClient.Send(mailMessage);
+                    Close();
                 }
             }
             APIAccessor.SetAuth(Environment.UserName, "pass");//set the authorization to whoever is logged in
